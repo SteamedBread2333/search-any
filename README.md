@@ -15,7 +15,3 @@
 
 ## 使用说明
 打开[Demo](https://steamedbread2333.github.io/search-any)
-
-## 部署
-
-项目已配置GitHub Actions工作流，推送代码到`main`分支会自动部署到GitHub Pages。
