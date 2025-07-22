@@ -14,7 +14,7 @@
                 setTimeout(() => {
                     document.title = '🤩 哇哦！恢复正常啦！';
                     setTimeout(() => {
-                        document.title = '极简搜索';
+                        document.title = 'Search Any';
                     }, 1500);
                 }, 300);
             }
@@ -316,6 +316,18 @@
         let currentEngine = 'google';
 
         // 工具箱切换
+        document.getElementById('toolbox-toggle').addEventListener('click', function () {
+            this.focus();
+        });
+        
+        document.getElementById('toolbox-toggle').addEventListener('blur', function () {
+            setTimeout(() => {
+                if (!document.getElementById('toolbox-drawer').contains(document.activeElement)) {
+                    document.getElementById('toolbox-drawer').style.display = 'none';
+                }
+            }, 100);
+        });
+        
         document.getElementById('toolbox-toggle').addEventListener('click', function () {
             const drawer = document.getElementById('toolbox-drawer');
             drawer.style.display = drawer.style.display === 'block' ? 'none' : 'block';
