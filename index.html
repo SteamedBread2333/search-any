@@ -4,7 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>极简搜索</title>
+    <title>Search Any</title>
+    <script>
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                document.title = '😰 糟糕！程序崩溃啦！';
+            } else {
+                document.title = 'Search Any';
+                setTimeout(() => {
+                    document.title = '🤩 哇哦！恢复正常啦！';
+                    setTimeout(() => {
+                        document.title = '极简搜索';
+                    }, 1500);
+                }, 300);
+            }
+        });
+    </script>
     <style>
         :root {
             --bg-color: #ffffff;
