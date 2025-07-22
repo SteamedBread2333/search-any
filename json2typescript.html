@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON转TypeScript</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a56d4;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #212529;
+            --border: #e9ecef;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+            resize: vertical;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+        
+        button {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        pre {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 JSON转TypeScript</h1>
+        <textarea id="json-input" placeholder="在此输入JSON..."></textarea>
+        <button id="convert-btn">转换</button>
+        <h3>TypeScript 接口:</h3>
+        <pre id="output"></pre>
+    </div>
+
+    <script type="module">
+        // 本地实现的json转TypeScript接口功能
+        function jsonToTS(json, options = { rootName: 'RootObject' }) {
+          if (!isObject(json) && !(Array.isArray(json) && json.length > 0 && json.every(isObject))) {
+            throw new Error('Only (Object) and (Array of Object) are supported');
+          }
+          
+          function isObject(obj) {
+            return obj && typeof obj === 'object' && !Array.isArray(obj);
+          }
+          
+          function getTypeStructure(obj) {
+            if (Array.isArray(obj)) {
+              return obj.length > 0 ? getTypeStructure(obj[0]) : {};
+            }
+            
+            const typeStructure = {};
+            for (const key in obj) {
+              const value = obj[key];
+              if (value === null) {
+                typeStructure[key] = 'null';
+              } else if (Array.isArray(value)) {
+                typeStructure[key] = [getTypeStructure(value.length > 0 ? value[0] : {})];
+              } else if (typeof value === 'object') {
+                typeStructure[key] = getTypeStructure(value);
+              } else {
+                typeStructure[key] = typeof value;
+              }
+            }
+            return typeStructure;
+          }
+          
+          function optimizeTypeStructure(typeStructure) {
+            if (typeof typeStructure !== 'object') return;
+            
+            for (const key in typeStructure) {
+              const value = typeStructure[key];
+              if (Array.isArray(value)) {
+                optimizeTypeStructure(value[0]);
+              } else if (typeof value === 'object') {
+                optimizeTypeStructure(value);
+              }
+            }
+          }
+          
+          function getNames(typeStructure, rootName) {
+            const names = {};
+            names[rootName] = typeStructure;
+            
+            function traverse(obj, parentKey = '') {
+              if (typeof obj !== 'object') return;
+              
+              for (const key in obj) {
+                const value = obj[key];
+                if (Array.isArray(value)) {
+                  const itemType = value[0];
+                  const name = parentKey + capitalize(key);
+                  if (typeof itemType === 'object') {
+                    names[name] = itemType;
+                    traverse(itemType, name);
+                  }
+                } else if (typeof value === 'object') {
+                  const name = parentKey + capitalize(key);
+                  names[name] = value;
+                  traverse(value, name);
+                }
+              }
+            }
+            
+            traverse(typeStructure);
+            return names;
+            
+            function capitalize(str) {
+              return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+          }
+          
+          function getInterfaceDescriptions(typeStructure, names) {
+            const descriptions = [];
+            
+            for (const name in names) {
+              const obj = names[name];
+              const fields = [];
+              
+              for (const key in obj) {
+                const type = obj[key];
+                let typeName;
+                
+                if (Array.isArray(type)) {
+                  const itemType = type[0];
+                  if (typeof itemType === 'object') {
+                    typeName = `${name}${capitalize(key)}[]`;
+                  } else {
+                    typeName = `${itemType}[]`;
+                  }
+                } else if (typeof type === 'object') {
+                  typeName = `${name}${capitalize(key)}`;
+                } else {
+                  typeName = type;
+                }
+                
+                fields.push({ name: key, type: typeName });
+              }
+              
+              descriptions.push({ name, fields });
+            }
+            
+            return descriptions;
+            
+            function capitalize(str) {
+              return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+          }
+          
+          function getInterfaceStringFromDescription(desc) {
+            const fields = desc.fields.map(f => `  ${f.name}: ${f.type};`).join('\n');
+            return `interface ${desc.name} {\n${fields}\n}`;
+          }
+          
+          const typeStructure = getTypeStructure(json);
+          optimizeTypeStructure(typeStructure);
+          const names = getNames(typeStructure, options.rootName);
+          return getInterfaceDescriptions(typeStructure, names).map(getInterfaceStringFromDescription);
+        }
+        
+        function convert() {
+            const jsonInput = document.getElementById('json-input').value;
+            try {
+                const jsonObj = JSON.parse(jsonInput);
+                const interfaces = jsonToTS(jsonObj);
+                document.getElementById('output').textContent = interfaces.join('\n\n');
+            } catch (e) {
+                document.getElementById('output').textContent = '错误: ' + e.message;
+            }
+        }
+        
+        document.getElementById('convert-btn').addEventListener('click', convert);
+    </script>
+</body>
+</html>
