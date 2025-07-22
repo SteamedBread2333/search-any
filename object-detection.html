@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物体检测工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        #video-container {
+            position: relative;
+            margin: 20px 0;
+        }
+        #video {
+            width: 100%;
+            border-radius: 4px;
+            display: block;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #3367d6;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>实时物体检测</h1>
+        <div id="video-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+        </div>
+        <button id="start-btn">开始检测</button>
+        <div id="results">
+            <p>点击"开始检测"按钮启用摄像头并开始物体检测</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const startBtn = document.getElementById('start-btn');
+        const resultsDiv = document.getElementById('results');
+        let model;
+        let stream;
+
+        // 加载模型
+        async function loadModel() {
+            model = await cocoSsd.load();
+            startBtn.disabled = false;
+            startBtn.textContent = '开始检测';
+        }
+
+        // 开始检测
+        async function startDetection() {
+            try {
+                startBtn.disabled = true;
+                startBtn.textContent = '初始化中...';
+                
+                // 获取摄像头权限
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                
+                // 设置canvas尺寸与视频一致
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                };
+                
+                startBtn.textContent = '检测中...';
+                detect();
+            } catch (error) {
+                console.error('Error:', error);
+                resultsDiv.innerHTML = `<p style="color:red">错误: ${error.message}</p>`;
+                startBtn.disabled = false;
+                startBtn.textContent = '重试';
+            }
+        }
+
+        // 检测物体
+        async function detect() {
+            if (!model) return;
+            
+            const predictions = await model.detect(video);
+            renderPredictions(predictions);
+            
+            // 更新结果展示
+            if (predictions.length > 0) {
+                let html = '<h3>检测结果:</h3><ul>';
+                predictions.forEach(pred => {
+                    html += `<li>${pred.class} (${Math.round(pred.score * 100)}%)</li>`;
+                });
+                html += '</ul>';
+                resultsDiv.innerHTML = html;
+            } else {
+                resultsDiv.innerHTML = '<p>未检测到物体</p>';
+            }
+            
+            requestAnimationFrame(detect);
+        }
+
+        // 在canvas上绘制检测框
+        function renderPredictions(predictions) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            
+            predictions.forEach(prediction => {
+                const [x, y, width, height] = prediction.bbox;
+                
+                // 绘制边界框
+                ctx.strokeStyle = '#00FFFF';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, width, height);
+                
+                // 绘制标签背景
+                ctx.fillStyle = '#00FFFF';
+                const textWidth = ctx.measureText(prediction.class).width;
+                const textHeight = 16;
+                ctx.fillRect(x, y, textWidth + 8, textHeight + 8);
+                
+                // 绘制文本
+                ctx.fillStyle = '#000000';
+                ctx.font = '14px Arial';
+                ctx.fillText(
+                    `${prediction.class} ${(prediction.score * 100).toFixed(1)}%`,
+                    x + 4,
+                    y + 16
+                );
+            });
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            startBtn.addEventListener('click', startDetection);
+            loadModel();
+        });
+
+        // 清理资源
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
+</body>
+</html>
