@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>颜色转换工具</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a56d4;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #212529;
+            --border: #e9ecef;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .converter-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+        }
+        
+        .preview-box {
+            width: 100px;
+            height: 100px;
+            margin: 1rem 0;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+        
+        button {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 颜色转换工具</h1>
+        
+        <div class="converter-section">
+            <h2>RGBA 转 HEX</h2>
+            <div class="preview-box" id="rgba-preview"></div>
+            <input type="text" id="rgba-input" placeholder="输入RGBA值，如: rgba(255, 0, 0, 0.5)">
+            <button onclick="rgbaToHex()">转换</button>
+            <input type="text" id="hex-output" placeholder="HEX结果将显示在这里" readonly>
+            <div class="preview-box" id="hex-preview"></div>
+        </div>
+        
+        <div class="converter-section">
+            <h2>HEX 转 RGBA</h2>
+            <div class="preview-box" id="hex-input-preview"></div>
+            <input type="text" id="hex-input" placeholder="输入HEX值，如: #ff000080">
+            <button onclick="hexToRgba()">转换</button>
+            <input type="text" id="rgba-output" placeholder="RGBA结果将显示在这里" readonly>
+            <div class="preview-box" id="rgba-output-preview"></div>
+        </div>
+    </div>
+
+    <script>
+        // RGBA转HEX
+        function rgbaToHex() {
+            const rgbaInput = document.getElementById('rgba-input').value;
+            const rgbaPreview = document.getElementById('rgba-preview');
+            const hexOutput = document.getElementById('hex-output');
+            const hexPreview = document.getElementById('hex-preview');
+            
+            // 设置预览
+            rgbaPreview.style.backgroundColor = rgbaInput;
+            
+            try {
+                // 解析RGBA值
+                const rgba = rgbaInput.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+                if (!rgba) throw new Error('无效的RGBA格式');
+                
+                const r = parseInt(rgba[1]);
+                const g = parseInt(rgba[2]);
+                const b = parseInt(rgba[3]);
+                const a = rgba[4] ? parseFloat(rgba[4]) : 1;
+                
+                // 转换为HEX
+                const hex = '#' + 
+                    ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1) + 
+                    (a < 1 ? Math.round(a * 255).toString(16).padStart(2, '0') : '');
+                
+                hexOutput.value = hex;
+                hexPreview.style.backgroundColor = hex;
+            } catch (e) {
+                hexOutput.value = '错误: ' + e.message;
+            }
+        }
+        
+        // HEX转RGBA
+        function hexToRgba() {
+            const hexInput = document.getElementById('hex-input').value;
+            const hexInputPreview = document.getElementById('hex-input-preview');
+            const rgbaOutput = document.getElementById('rgba-output');
+            const rgbaOutputPreview = document.getElementById('rgba-output-preview');
+            
+            // 设置预览
+            hexInputPreview.style.backgroundColor = hexInput;
+            
+            try {
+                // 解析HEX值
+                let hex = hexInput.replace('#', '');
+                let r, g, b, a = 1;
+                
+                if (hex.length === 3 || hex.length === 4) {
+                    r = parseInt(hex[0] + hex[0], 16);
+                    g = parseInt(hex[1] + hex[1], 16);
+                    b = parseInt(hex[2] + hex[2], 16);
+                    if (hex.length === 4) a = parseInt(hex[3] + hex[3], 16) / 255;
+                } else if (hex.length === 6 || hex.length === 8) {
+                    r = parseInt(hex.substring(0, 2), 16);
+                    g = parseInt(hex.substring(2, 4), 16);
+                    b = parseInt(hex.substring(4, 6), 16);
+                    if (hex.length === 8) a = parseInt(hex.substring(6, 8), 16) / 255;
+                } else {
+                    throw new Error('无效的HEX格式');
+                }
+                
+                const rgba = `rgba(${r}, ${g}, ${b}, ${a})`;
+                rgbaOutput.value = rgba;
+                rgbaOutputPreview.style.backgroundColor = rgba;
+            } catch (e) {
+                rgbaOutput.value = '错误: ' + e.message;
+            }
+        }
+    </script>
+</body>
+</html>
