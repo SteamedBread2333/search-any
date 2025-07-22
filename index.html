@@ -96,6 +96,41 @@
             right: 20px;
         }
         
+        .toolbox-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 8px 16px;
+            background-color: var(--input-bg);
+            border-radius: 16px;
+            cursor: pointer;
+            border: 1px solid var(--input-border);
+        }
+        
+        .toolbox-drawer {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            padding: 10px;
+            display: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        .toolbox-item {
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 4px 0;
+        }
+        
+        .toolbox-item:hover {
+            background-color: var(--input-bg);
+        }
+        
         .theme-btn {
             padding: 6px 12px;
             border-radius: 16px;
@@ -141,6 +176,19 @@
     </style>
 </head>
 <body>
+    <div class="toolbox-toggle" id="toolbox-toggle">🧰 工具箱</div>
+    <div class="toolbox-drawer" id="toolbox-drawer">
+        <div class="toolbox-item" onclick="window.open('json2typescript.html', '_blank')">
+            🔄 JSON转TypeScript
+        </div>
+        <div class="toolbox-item" onclick="window.open('image2base64.html', '_blank')">
+            🖼️ 图片转Base64
+        </div>
+        <div class="toolbox-item" onclick="window.open('color-converter.html', '_blank')">
+            🎨 颜色转换工具
+        </div>
+    </div>
+    
     <div class="container">
             <div class="search-box">
                 <input type="text" id="search-input" placeholder="搜索…" autofocus>
@@ -186,6 +234,12 @@
         // 当前选择的搜索引擎
         let currentEngine = 'google';
 
+        // 工具箱切换
+        document.getElementById('toolbox-toggle').addEventListener('click', function() {
+            const drawer = document.getElementById('toolbox-drawer');
+            drawer.style.display = drawer.style.display === 'block' ? 'none' : 'block';
+        });
+        
         // 初始化
         function init() {
             // 从localStorage读取上次选择的搜索引擎
