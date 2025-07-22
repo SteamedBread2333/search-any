@@ -320,12 +320,15 @@
             this.focus();
         });
         
-        document.getElementById('toolbox-toggle').addEventListener('blur', function () {
-            setTimeout(() => {
-                if (!document.getElementById('toolbox-drawer').contains(document.activeElement)) {
-                    document.getElementById('toolbox-drawer').style.display = 'none';
-                }
-            }, 100);
+        document.addEventListener('click', function(event) {
+            const drawer = document.getElementById('toolbox-drawer');
+            const toggle = document.getElementById('toolbox-toggle');
+            
+            if (drawer.style.display === 'block' && 
+                !drawer.contains(event.target) && 
+                !toggle.contains(event.target)) {
+                drawer.style.display = 'none';
+            }
         });
         
         document.getElementById('toolbox-toggle').addEventListener('click', function () {
