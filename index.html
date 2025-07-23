@@ -257,13 +257,13 @@
 <body>
     <div class="toolbox-toggle" id="toolbox-toggle">🧰 工具箱</div>
     <div class="toolbox-drawer" id="toolbox-drawer">
-        <div class="toolbox-item" onclick="window.open('json2typescript.html', '_blank')">
+        <div class="toolbox-item" onclick="isJuejinDomain ? window.open('https://aicoding.juejin.cn/pens/7530109400451645491', '_blank') : window.open('json2typescript.html', '_blank')">
             🔄 JSON转TypeScript
         </div>
-        <div class="toolbox-item" onclick="window.open('image2base64.html', '_blank')">
+        <div class="toolbox-item" onclick="isJuejinDomain ? window.open('https://aicoding.juejin.cn/pens/7530109291132305459', '_blank') : window.open('image2base64.html', '_blank')">
             🖼️ 图片转Base64
         </div>
-        <div class="toolbox-item" onclick="window.open('color-converter.html', '_blank')">
+        <div class="toolbox-item" onclick="isJuejinDomain ? window.open('https://aicoding.juejin.cn/pens/7530109166636302345', '_blank') : window.open('color-converter.html', '_blank')">
             🎨 颜色转换工具
         </div>
         <div class="toolbox-item" onclick="window.open(`https://github.com/SteamedBread2333/rmbg-tool`, '_blank')">
@@ -335,6 +335,9 @@
         // 当前选择的搜索引擎
         let currentEngine = 'google';
 
+        // 检查域名是否包含juejin
+        const isJuejinDomain = window.location.href.includes('juejin');
+        
         // 工具箱切换
         document.getElementById('toolbox-toggle').addEventListener('click', function () {
             this.focus();
