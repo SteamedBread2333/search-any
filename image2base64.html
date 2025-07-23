@@ -104,8 +104,14 @@
         <button onclick="convertToBase64()">转换</button>
         <textarea id="base64-output" placeholder="Base64编码将显示在这里..." readonly></textarea>
         <h3>预览效果:</h3>
-        <div id="preview-container" style="margin-top: 1rem; padding: 1rem; background-color: var(--card-bg); border-radius: 8px; border: 1px solid var(--border);">
+        <div id="preview-container" style="margin-top: 1rem; padding: 1rem; background-color: #efefef; border-radius: 8px; border: 1px solid var(--border);">
             <img id="base64-preview" style="max-width: 100%; max-height: 300px; display: none;">
+        </div>
+        <textarea id="base64-input" placeholder="将Base64编码填写在这里..."></textarea>
+        <button onclick="convertBase64ToImage()">预览图片</button>
+        <h3>图片:</h3>
+        <div id="preview-container" style="margin-top: 1rem; padding: 1rem; background-color: #efefef; border-radius: 8px; border: 1px solid var(--border);">
+            <img id="base64-loader" style="max-width: 100%; max-height: 300px; display: none;">
         </div>
     </div>
 
@@ -125,6 +131,17 @@
                 reader.readAsDataURL(file);
             }
         });
+
+        function convertBase64ToImage() {
+            const base64Input = document.getElementById('base64-input').value;
+            if (!base64Input) {
+                alert('请先填写Base64编码');
+                return;
+            }
+            const previewImg = document.getElementById('base64-loader');
+            previewImg.src = base64Input;
+            previewImg.style.display = 'block';
+        }
         
         function convertToBase64() {
             const file = imageInput.files[0];
