@@ -155,6 +155,202 @@
             text-align: center;
         }
 
+        /* 快捷方式样式 */
+        .shortcuts-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .shortcut-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            cursor: pointer;
+            transition: transform 0.2s;
+            text-align: center;
+            position: relative;
+        }
+
+        .shortcut-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .shortcut-icon {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+        }
+
+        .shortcut-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        .shortcut-description {
+            font-size: 12px;
+            color: #666;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .delete-shortcut-btn, .edit-shortcut-btn {
+            position: absolute;
+            top: 5px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+            color: #999;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-shortcut-btn {
+            right: 5px;
+        }
+
+        .edit-shortcut-btn {
+            right: 35px;
+        }
+
+        .shortcut-item:hover .delete-shortcut-btn,
+        .shortcut-item:hover .edit-shortcut-btn {
+            display: flex;
+        }
+
+        .delete-shortcut-btn:hover {
+            background-color: #ff4444;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .edit-shortcut-btn:hover {
+            background-color: #4285f4;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .add-shortcut-container {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .add-shortcut-btn {
+            padding: 8px 16px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .add-shortcut-btn:hover {
+            background-color: var(--input-border);
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: var(--bg-color);
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: var(--text-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-group input[type="file"] {
+            margin-top: 5px;
+        }
+
+        .modal-content button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .modal-content button:hover {
+            background-color: #3367d6;
+        }
+
         .theme-toggle {
             display: flex;
             gap: 10px;
@@ -295,6 +491,7 @@
             <input type="text" id="search-input" placeholder="搜索…" autofocus>
             <div class="shortcut-hint"></div>
         </div>
+        
         <div class="engine-options">
             <div class="engine-option" data-engine="google">
                 <input type="radio" name="engine" id="google" checked>
@@ -307,6 +504,44 @@
             <div class="engine-option" data-engine="bing">
                 <input type="radio" name="engine" id="bing">
                 <label for="bing">🔍 必应</label>
+            </div>
+        </div>
+
+        <!-- 快捷方式区域 -->
+        <div class="shortcuts-container" id="shortcuts-container">
+            <!-- 快捷方式将通过JavaScript动态添加 -->
+        </div>
+        
+        <!-- 添加快捷方式按钮 -->
+        <div class="add-shortcut-container">
+            <button class="add-shortcut-btn" id="add-shortcut-btn">➕ 添加快捷方式</button>
+        </div>
+        
+        <!-- 添加快捷方式模态框 -->
+        <div class="modal" id="shortcut-modal">
+            <div class="modal-content">
+                <span class="close" id="close-modal">&times;</span>
+                <h2>添加快捷方式</h2>
+                <form id="shortcut-form">
+                    <div class="form-group">
+                        <label for="shortcut-name">名称:</label>
+                        <input type="text" id="shortcut-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="shortcut-url">链接:</label>
+                        <input type="url" id="shortcut-url" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="shortcut-description">描述:</label>
+                        <textarea id="shortcut-description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="shortcut-icon">图标 (可选):</label>
+                        <input type="text" id="shortcut-icon" placeholder="图标URL">
+                        <input type="file" id="shortcut-icon-upload" accept="image/*">
+                    </div>
+                    <button type="submit">添加</button>
+                </form>
             </div>
         </div>
     </div>
@@ -359,6 +594,9 @@
             drawer.style.display = drawer.style.display === 'block' ? 'none' : 'block';
         });
 
+        // 快捷方式功能
+        let shortcuts = [];
+        
         // 初始化
         function init() {
             // 从localStorage读取上次选择的搜索引擎
@@ -424,6 +662,251 @@
             }
 
             showShortcutHint();
+            
+            // 初始化快捷方式功能
+            initShortcuts();
+        }
+
+        // 初始化快捷方式
+        function initShortcuts() {
+            // 从localStorage加载快捷方式
+            loadShortcuts();
+            
+            // 显示快捷方式
+            renderShortcuts();
+            
+            // 添加快捷方式按钮事件
+            document.getElementById('add-shortcut-btn').addEventListener('click', () => {
+                document.getElementById('shortcut-modal').style.display = 'block';
+            });
+            
+            // 关闭模态框
+            document.getElementById('close-modal').addEventListener('click', () => {
+                document.getElementById('shortcut-modal').style.display = 'none';
+            });
+            
+            // 点击模态框外部关闭
+            window.addEventListener('click', (event) => {
+                const modal = document.getElementById('shortcut-modal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // 处理表单提交
+            document.getElementById('shortcut-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                addShortcut();
+            });
+        }
+
+        // 从localStorage加载快捷方式
+        function loadShortcuts() {
+            const saved = localStorage.getItem('shortcuts');
+            if (saved) {
+                shortcuts = JSON.parse(saved);
+            }
+        }
+
+        // 保存快捷方式到localStorage
+        function saveShortcuts() {
+            localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
+        }
+
+        // 删除快捷方式
+        function deleteShortcut(id) {
+            if (confirm('确定要删除这个快捷方式吗？')) {
+                shortcuts = shortcuts.filter(shortcut => shortcut.id !== id);
+                saveShortcuts();
+                renderShortcuts();
+            }
+        }
+
+        // 编辑快捷方式
+        function editShortcut(id) {
+            const shortcut = shortcuts.find(s => s.id === id);
+            if (shortcut) {
+                // 填充表单数据
+                document.getElementById('shortcut-name').value = shortcut.name;
+                document.getElementById('shortcut-url').value = shortcut.url;
+                document.getElementById('shortcut-description').value = shortcut.description;
+                document.getElementById('shortcut-icon').value = shortcut.icon || '';
+                
+                // 清空文件输入
+                document.getElementById('shortcut-icon-upload').value = '';
+                
+                // 显示模态框
+                document.getElementById('shortcut-modal').style.display = 'block';
+                
+                // 更改表单提交处理程序
+                const form = document.getElementById('shortcut-form');
+                
+                // 移除旧的事件监听器
+                const newForm = form.cloneNode(true);
+                form.parentNode.replaceChild(newForm, form);
+                
+                // 添加新的事件监听器
+                newForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    updateShortcut(id);
+                });
+            }
+        }
+
+        // 更新快捷方式
+        function updateShortcut(id) {
+            const name = document.getElementById('shortcut-name').value;
+            const url = document.getElementById('shortcut-url').value;
+            const description = document.getElementById('shortcut-description').value;
+            const iconUrl = document.getElementById('shortcut-icon').value;
+            
+            // 处理图标上传
+            const fileInput = document.getElementById('shortcut-icon-upload');
+            
+            // 找到要更新的快捷方式
+            const shortcutIndex = shortcuts.findIndex(s => s.id === id);
+            if (shortcutIndex !== -1) {
+                // 更新快捷方式对象
+                const updatedShortcut = {
+                    id: id,
+                    name,
+                    url,
+                    description,
+                    icon: iconUrl || null
+                };
+                
+                // 如果有上传的文件，读取为base64
+                if (fileInput.files && fileInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        updatedShortcut.icon = e.target.result;
+                        finishUpdateShortcut(shortcutIndex, updatedShortcut);
+                    };
+                    reader.readAsDataURL(fileInput.files[0]);
+                } else {
+                    // 如果没有上传文件，尝试获取网站图标
+                    if (!iconUrl) {
+                        // 使用更高清的favicon服务
+                        updatedShortcut.icon = `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`;
+                    }
+                    finishUpdateShortcut(shortcutIndex, updatedShortcut);
+                }
+            }
+        }
+
+        // 完成更新快捷方式
+        function finishUpdateShortcut(index, updatedShortcut) {
+            shortcuts[index] = updatedShortcut;
+            saveShortcuts();
+            renderShortcuts();
+            
+            // 重置表单并关闭模态框
+            document.getElementById('shortcut-form').reset();
+            document.getElementById('shortcut-modal').style.display = 'none';
+            
+            // 恢复添加快捷方式的表单处理程序
+            const form = document.getElementById('shortcut-form');
+            const newForm = form.cloneNode(true);
+            form.parentNode.replaceChild(newForm, form);
+            newForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                addShortcut();
+            });
+        }
+
+        // 添加快捷方式
+        function addShortcut() {
+            const name = document.getElementById('shortcut-name').value;
+            const url = document.getElementById('shortcut-url').value;
+            const description = document.getElementById('shortcut-description').value;
+            const iconUrl = document.getElementById('shortcut-icon').value;
+            
+            // 处理图标上传
+            const fileInput = document.getElementById('shortcut-icon-upload');
+            
+            // 创建快捷方式对象
+            const shortcut = {
+                id: Date.now(),
+                name,
+                url,
+                description,
+                icon: iconUrl || null
+            };
+            
+            // 如果有上传的文件，读取为base64
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    shortcut.icon = e.target.result;
+                    finishAddShortcut(shortcut);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                // 如果没有上传文件，尝试获取网站图标
+                if (!iconUrl) {
+                    // 使用更高清的favicon服务
+                    shortcut.icon = `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`;
+                }
+                finishAddShortcut(shortcut);
+            }
+        }
+
+        // 完成添加快捷方式
+        function finishAddShortcut(shortcut) {
+            shortcuts.push(shortcut);
+            saveShortcuts();
+            renderShortcuts();
+            
+            // 重置表单并关闭模态框
+            document.getElementById('shortcut-form').reset();
+            document.getElementById('shortcut-modal').style.display = 'none';
+        }
+
+        // 渲染快捷方式
+        function renderShortcuts() {
+            const container = document.getElementById('shortcuts-container');
+            container.innerHTML = '';
+            
+            shortcuts.forEach(shortcut => {
+                const item = document.createElement('div');
+                item.className = 'shortcut-item';
+                
+                // 创建快捷方式内容
+                const iconHtml = shortcut.icon ? `<img src="${shortcut.icon}" alt="${shortcut.name}" class="shortcut-icon">` : '';
+                const nameHtml = `<div class="shortcut-name">${shortcut.name}</div>`;
+                const descHtml = `<div class="shortcut-description">${shortcut.description}</div>`;
+                const editBtnHtml = `<button class="edit-shortcut-btn" data-id="${shortcut.id}">✎</button>`;
+                const deleteBtnHtml = `<button class="delete-shortcut-btn" data-id="${shortcut.id}">✕</button>`;
+                
+                item.innerHTML = iconHtml + nameHtml + descHtml + editBtnHtml + deleteBtnHtml;
+                
+                // 添加点击事件
+                item.addEventListener('click', (e) => {
+                    // 阻止事件冒泡
+                    e.stopPropagation();
+                    
+                    // 如果点击的是删除按钮，则执行删除功能
+                    if (e.target.classList.contains('delete-shortcut-btn')) {
+                        e.preventDefault();
+                        const id = parseInt(e.target.dataset.id);
+                        deleteShortcut(id);
+                        return;
+                    }
+                    
+                    // 如果点击的是编辑按钮，则执行编辑功能
+                    if (e.target.classList.contains('edit-shortcut-btn')) {
+                        e.preventDefault();
+                        const id = parseInt(e.target.dataset.id);
+                        editShortcut(id);
+                        return;
+                    }
+                    
+                    // 否则打开链接
+                    window.open(shortcut.url, '_blank');
+                });
+                
+                container.appendChild(item);
+            });
         }
 
         // 处理搜索
