@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI 计算器</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a56d4;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #212529;
+            --border: #e9ecef;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --danger: #e63946;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .calculator-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+        }
+        
+        .input-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+            box-sizing: border-box;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+        
+        button {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin-top: 1rem;
+        }
+        
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .result.underweight {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .result.normal {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .result.overweight {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .result.obese {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+        
+        .bmi-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        
+        .bmi-category {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .bmi-info {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .bmi-info h3 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+        
+        .bmi-info ul {
+            padding-left: 1.5rem;
+            margin: 0.5rem 0;
+        }
+        
+        .bmi-info li {
+            margin-bottom: 0.3rem;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .calculator-section {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚖️ BMI 计算器</h1>
+        
+        <div class="calculator-section">
+            <div class="input-group">
+                <label for="height">身高 (cm):</label>
+                <input type="number" id="height" placeholder="例如: 175">
+            </div>
+            
+            <div class="input-group">
+                <label for="weight">体重 (kg):</label>
+                <input type="number" id="weight" placeholder="例如: 70">
+            </div>
+            
+            <button onclick="calculateBMI()">计算 BMI</button>
+            
+            <div id="result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="bmi-info">
+            <h3>BMI 指数参考</h3>
+            <ul>
+                <li>偏瘦: BMI < 18.5</li>
+                <li>正常: 18.5 ≤ BMI < 24</li>
+                <li>偏胖: 24 ≤ BMI < 28</li>
+                <li>肥胖: BMI ≥ 28</li>
+            </ul>
+            <p>BMI（Body Mass Index）身体质量指数，是目前国际上常用的衡量人体胖瘦程度以及是否健康的一个标准。</p>
+        </div>
+    </div>
+
+    <script>
+        function calculateBMI() {
+            // 获取输入值
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            
+            // 验证输入
+            if (!height || !weight || height <= 0 || weight <= 0) {
+                alert('请输入有效的身高和体重值');
+                return;
+            }
+            
+            // 计算BMI (体重(kg) / 身高(m)²)
+            const heightInMeters = height / 100;
+            const bmi = weight / (heightInMeters * heightInMeters);
+            
+            // 确定BMI类别
+            let category, className;
+            if (bmi < 18.5) {
+                category = '偏瘦';
+                className = 'underweight';
+            } else if (bmi < 24) {
+                category = '正常';
+                className = 'normal';
+            } else if (bmi < 28) {
+                category = '偏胖';
+                className = 'overweight';
+            } else {
+                category = '肥胖';
+                className = 'obese';
+            }
+            
+            // 显示结果
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = `
+                <div class="bmi-category">您的体重状态: ${category}</div>
+                <div class="bmi-value">${bmi.toFixed(1)}</div>
+                <div>BMI 指数</div>
+            `;
+            resultElement.className = `result ${className}`;
+            resultElement.style.display = 'block';
+        }
+        
+        // 添加回车键支持
+        document.getElementById('height').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                document.getElementById('weight').focus();
+            }
+        });
+        
+        document.getElementById('weight').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                calculateBMI();
+            }
+        });
+    </script>
+</body>
+</html>
