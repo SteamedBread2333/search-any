@@ -420,6 +420,9 @@
         if (savedDiceCount) {
             diceCountInput.value = savedDiceCount;
         }
+
+        // 锁定状态变量
+        let isLocked = false;
         
         // 从localStorage读取锁定状态
         const savedLockedState = localStorage.getItem('diceLocked');
@@ -438,9 +441,6 @@
         
         // 添加骰子数量变化事件
         diceCountInput.addEventListener('change', updateDiceCount);
-        
-        // 锁定状态变量
-        let isLocked = false;
         
         // 锁定按钮功能
         document.getElementById('lock-btn').addEventListener('click', function() {
