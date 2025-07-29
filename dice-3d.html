@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"content="width=device-width, initial-scale=1.0">
+    <title>掷骰子</title>
+    <style>
+        :root {
+            --primary: #9c27b0; /* 紫色，夜店风格 */
+            --primary-hover: #7b1fa2; /* 深紫色 */
+            --bg: #121212; /* 深黑色背景 */
+            --card-bg: #1e1e1e; /* 深灰色卡片背景 */
+            --text: #e0e0e0; /* 浅灰色文字 */
+            --border: #333; /* 深灰色边框 */
+            --dice-bg: #f7f7f7; /* 保持骰子背景为白色 */
+            --dice-dot: #333; /* 保持骰子点数为黑色 */
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .dice-container {
+            margin: 2rem auto;
+            perspective: 1000px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+        }
+        
+        .dice {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            transform-style: preserve-3d;
+            transition: transform 1.5s ease-out;
+        }
+        
+        .controls {
+            margin: 1rem 0;
+        }
+        
+        #dice-count {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            width: 60px;
+            background-color: #333; /* 深灰色背景 */
+            color: #e0e0e0; /* 浅灰色文字 */
+            box-shadow: 0 0 5px rgba(156, 39, 176, 0.5); /* 紫色发光效果 */
+        }
+        
+        .dice-face {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background-color: var(--dice-bg); /* 保持骰子背景为白色 */
+            border: 2px solid #ccc;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dot {
+            width: 25px;
+            height: 25px;
+            background-color: var(--dice-dot); /* 保持骰子点数为黑色 */
+            border-radius: 50%;
+            position: absolute;
+        }
+        
+        /* 骰子各面的位置 */
+        .front  { transform: translateZ(75px); }
+        .back   { transform: rotateY(180deg) translateZ(75px); }
+        .right  { transform: rotateY(90deg) translateZ(75px); }
+        .left   { transform: rotateY(-90deg) translateZ(75px); }
+        .top    { transform: rotateX(90deg) translateZ(75px); }
+        .bottom { transform: rotateX(-90deg) translateZ(75px); }
+        
+        /* 各面的点数布局 */
+        .one .dot:nth-child(1) { top: 62.5px; left: 62.5px; }
+        
+        .two .dot:nth-child(1) { top: 30px; left: 30px; }
+        .two .dot:nth-child(2) { bottom: 30px; right: 30px; }
+        
+        .three .dot:nth-child(1) { top: 30px; left: 30px; }
+        .three .dot:nth-child(2) { top: 62.5px; left: 62.5px; }
+        .three .dot:nth-child(3) { bottom: 30px; right: 30px; }
+        
+        .four .dot:nth-child(1) { top: 30px; left: 30px; }
+        .four .dot:nth-child(2) { top: 30px; right: 30px; }
+        .four .dot:nth-child(3) { bottom: 30px; left: 30px; }
+        .four .dot:nth-child(4) { bottom: 30px; right: 30px; }
+        
+        .five .dot:nth-child(1) { top: 30px; left: 30px; }
+        .five .dot:nth-child(2) { top: 30px; right: 30px; }
+        .five .dot:nth-child(3) { top: 62.5px; left: 62.5px; }
+        .five .dot:nth-child(4) { bottom: 30px; left: 30px; }
+        .five .dot:nth-child(5) { bottom: 30px; right: 30px; }
+        
+        .six .dot:nth-child(1) { top: 30px; left: 30px; }
+        .six .dot:nth-child(2) { top: 30px; right: 30px; }
+        .six .dot:nth-child(3) { top: 62.5px; left: 30px; }
+        .six .dot:nth-child(4) { top: 62.5px; right: 30px; }
+        .six .dot:nth-child(5) { bottom: 30px; left: 30px; }
+        .six .dot:nth-child(6) { bottom: 30px; right: 30px; }
+        
+        .roll-btn {
+            padding: 15px 30px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%); /* 紫色渐变 */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4); /* 紫色阴影 */
+            margin: 1rem 0;
+        }
+        
+        .roll-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.6); /* 更亮的紫色阴影 */
+        }
+        
+        .roll-btn:active {
+            transform: translateY(0);
+        }
+        
+        .roll-btn:disabled {
+            background: #333; /* 深灰色 */
+            color: #777;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .lock-btn {
+            padding: 15px 30px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #ff4081 0%, #f50057 100%); /* 粉色渐变 */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 64, 129, 0.4); /* 粉色阴影 */
+        }
+        
+        .lock-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 64, 129, 0.6); /* 更亮的粉色阴影 */
+        }
+        
+        .lock-btn:disabled {
+            background: #333; /* 深灰色 */
+            color: #777;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 1.5rem 0;
+            min-height: 2rem;
+        }
+        
+        .instructions {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3); /* 紫色阴影 */
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+        
+        .instructions ul {
+            padding-left: 1.5rem;
+        }
+        
+        .instructions li {
+            margin-bottom: 0.5rem;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .dice {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .dice-face {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .front  { transform: translateZ(50px); }
+            .back   { transform: rotateY(180deg) translateZ(50px); }
+            .right  { transform: rotateY(90deg) translateZ(50px); }
+            .left   { transform: rotateY(-90deg) translateZ(50px); }
+            .top    { transform: rotateX(90deg) translateZ(50px); }
+            .bottom { transform: rotateX(-90deg) translateZ(50px); }
+            
+            .dot {
+                width: 15px;
+                height: 15px;
+            }
+            
+            .one .dot:nth-child(1) { top: 42.5px; left: 42.5px; }
+            
+            .two .dot:nth-child(1) { top: 20px; left: 20px; }
+            .two .dot:nth-child(2) { bottom: 20px; right: 20px; }
+            
+            .three .dot:nth-child(1) { top: 20px; left: 20px; }
+            .three .dot:nth-child(2) { top: 42.5px; left: 42.5px; }
+            .three .dot:nth-child(3) { bottom: 20px; right: 20px; }
+            
+            .four .dot:nth-child(1) { top: 20px; left: 20px; }
+            .four .dot:nth-child(2) { top: 20px; right: 20px; }
+            .four .dot:nth-child(3) { bottom: 20px; left: 20px; }
+            .four .dot:nth-child(4) { bottom: 20px; right: 20px; }
+            
+            .five .dot:nth-child(1) { top: 20px; left: 20px; }
+            .five .dot:nth-child(2) { top: 20px; right: 20px; }
+            .five .dot:nth-child(3) { top: 42.5px; left: 42.5px; }
+            .five .dot:nth-child(4) { bottom: 20px; left: 20px; }
+            .five .dot:nth-child(5) { bottom: 20px; right: 20px; }
+            
+            .six .dot:nth-child(1) { top: 20px; left: 20px; }
+            .six .dot:nth-child(2) { top: 20px; right: 20px; }
+            .six .dot:nth-child(3) { top: 42.5px; left: 20px; }
+            .six .dot:nth-child(4) { top: 42.5px; right: 20px; }
+            .six .dot:nth-child(5) { bottom: 20px; left: 20px; }
+            .six .dot:nth-child(6) { bottom: 20px; right: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎲 掷骰子</h1>
+        
+        <div class="controls">
+            <label for="dice-count">骰子数量: </label>
+            <input type="number" id="dice-count" min="1" max="10" value="1">
+        </div>
+        
+        <div class="dice-container" id="dice-container">
+            <!-- 骰子将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="result" id="result">点击按钮开始掷骰子</div>
+        
+        <div class="button-group">
+            <button class="roll-btn" id="roll-btn">🎲 掷骰子</button>
+            <button class="lock-btn" id="lock-btn">🔒 锁定</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>使用说明</h3>
+            <ul>
+                <li>点击 "🎲 掷骰子" 按钮开始掷骰子</li>
+                <li>骰子会随机旋转并显示一个1-6的点数</li>
+                <li>掷骰子过程中按钮会被禁用，防止重复点击</li>
+                <li>掷骰子完成后会显示结果</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const diceContainer = document.getElementById('dice-container');
+        const rollBtn = document.getElementById('roll-btn');
+        const resultElement = document.getElementById('result');
+        const diceCountInput = document.getElementById('dice-count');
+        
+        // 骰子各面的旋转值
+        const diceRotations = [
+            { x: 0, y: 0, z: 0 },        // 1 (正面)
+            { x: 0, y: 180, z: 0 },      // 2 (背面)
+            { x: 0, y: 90, z: 0 },       // 3 (右面)
+            { x: 0, y: -90, z: 0 },      // 4 (左面)
+            { x: -90, y: 0, z: 0 },      // 5 (上面)
+            { x: 90, y: 0, z: 0 }        // 6 (下面)
+        ];
+        
+        // 创建骰子HTML结构
+        function createDice() {
+            const dice = document.createElement('div');
+            dice.className = 'dice';
+            
+            // 创建骰子的6个面
+            const faces = ['front one', 'back two', 'right three', 'left four', 'top five', 'bottom six'];
+            const dotCounts = [1, 2, 3, 4, 5, 6];
+            
+            for (let i = 0; i < 6; i++) {
+                const face = document.createElement('div');
+                face.className = `dice-face ${faces[i]}`;
+                
+                // 添加点数
+                for (let j = 0; j < dotCounts[i]; j++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'dot';
+                    face.appendChild(dot);
+                }
+                
+                dice.appendChild(face);
+            }
+            
+            return dice;
+        }
+        
+        // 更新骰子容器中的骰子数量
+        function updateDiceCount() {
+            const count = parseInt(diceCountInput.value) || 1;
+            const clampedCount = Math.max(1, Math.min(10, count));
+            diceCountInput.value = clampedCount;
+            
+            // 保存骰子数量到localStorage
+            localStorage.setItem('diceCount', clampedCount);
+            
+            // 清空容器
+            diceContainer.innerHTML = '';
+            
+            // 创建指定数量的骰子
+            for (let i = 0; i < clampedCount; i++) {
+                diceContainer.appendChild(createDice());
+            }
+        }
+        
+        // 掷骰子函数
+        function rollDice() {
+            // 禁用按钮和输入框
+            rollBtn.disabled = true;
+            diceCountInput.disabled = true;
+            document.getElementById('lock-btn').disabled = true; // 禁用锁定按钮
+            resultElement.textContent = '掷骰子中...';
+            
+            // 获取所有骰子元素
+            const diceElements = diceContainer.querySelectorAll('.dice');
+            const diceValues = [];
+            
+            // 为每个骰子生成随机点数和旋转动画
+            diceElements.forEach(die => {
+                // 随机选择一个点数 (1-6)
+                const diceValue = Math.floor(Math.random() * 6) + 1;
+                diceValues.push(diceValue);
+                
+                // 添加随机旋转动画，并在动画结束时应用最终旋转
+                const randomX = Math.floor(Math.random() * 5) * 360 + 720 + diceRotations[diceValue - 1].x; // 至少旋转两圈
+                const randomY = Math.floor(Math.random() * 5) * 360 + 720 + diceRotations[diceValue - 1].y;
+                const randomZ = Math.floor(Math.random() * 5) * 360 + 720 + diceRotations[diceValue - 1].z;
+                
+                die.style.transform = `rotateX(${randomX}deg) rotateY(${randomY}deg) rotateZ(${randomZ}deg)`;
+            });
+            
+            // 动画结束后显示结果
+            setTimeout(() => {
+                // 计算总点数
+                const total = diceValues.reduce((sum, value) => sum + value, 0);
+                
+                // 显示结果
+                if (diceValues.length === 1) {
+                    resultElement.textContent = `🎲 掷出了 ${diceValues[0]} 点!`;
+                } else {
+                    const valuesText = diceValues.join(', ');
+                    resultElement.textContent = `🎲 掷出了 ${valuesText} 点，总计 ${total} 点!`;
+                }
+                
+                // 启用按钮和输入框
+                rollBtn.disabled = false;
+                diceCountInput.disabled = false;
+                document.getElementById('lock-btn').disabled = false; // 启用锁定按钮
+            }, 1500);
+        }
+        
+        // 从localStorage读取骰子数量，如果没有则默认为1
+        const savedDiceCount = localStorage.getItem('diceCount');
+        if (savedDiceCount) {
+            diceCountInput.value = savedDiceCount;
+        }
+        
+        // 从localStorage读取锁定状态
+        const savedLockedState = localStorage.getItem('diceLocked');
+        if (savedLockedState === 'true') {
+            isLocked = true;
+            rollBtn.disabled = true;
+            diceCountInput.disabled = true;
+            document.getElementById('lock-btn').textContent = '🔓 解锁';
+        }
+        
+        // 初始化骰子
+        updateDiceCount();
+        
+        // 添加按钮点击事件
+        rollBtn.addEventListener('click', rollDice);
+        
+        // 添加骰子数量变化事件
+        diceCountInput.addEventListener('change', updateDiceCount);
+        
+        // 锁定状态变量
+        let isLocked = false;
+        
+        // 锁定按钮功能
+        document.getElementById('lock-btn').addEventListener('click', function() {
+            isLocked = !isLocked;
+            
+            if (isLocked) {
+                // 锁定状态：禁用掷骰子按钮和骰子数量输入框
+                rollBtn.disabled = true;
+                diceCountInput.disabled = true;
+                this.textContent = '🔓 解锁';
+                
+                // 保存锁定状态到localStorage
+                localStorage.setItem('diceLocked', 'true');
+            } else {
+                // 解锁状态：启用掷骰子按钮和骰子数量输入框
+                rollBtn.disabled = false;
+                diceCountInput.disabled = false;
+                this.textContent = '🔒 锁定';
+                
+                // 保存解锁状态到localStorage
+                localStorage.setItem('diceLocked', 'false');
+            }
+        });
+        
+        // 在骰子数量输入框的change事件中检查锁定状态
+        diceCountInput.addEventListener('change', function() {
+            if (!isLocked) {
+                updateDiceCount();
+            }
+        });
+        
+        // 添加键盘支持 (按空格键掷骰子)
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' && !rollBtn.disabled && !isLocked) {
+                event.preventDefault();
+                rollDice();
+            }
+        });
+    </script>
+</body>
+</html>
