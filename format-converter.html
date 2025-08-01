@@ -518,15 +518,68 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js"></script>
-    <script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+    <!-- 根据环境动态加载 FFmpeg 库 -->
     <script>
-        const { FFmpeg } = FFmpegWASM;
-        const { fetchFile, toBlobURL } = FFmpegUtil;
-
+        // 检测环境并加载相应的库文件
+        const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+        
+        async function loadFFmpegLibraries() {
+            try {
+                if (isLocalDev) {
+                    console.log('🏠 本地环境：尝试加载本地 FFmpeg 库...');
+                    try {
+                        await loadScript('/assets/ffmpeg/ffmpeg.js');
+                        await loadScript('https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js');
+                        console.log('✅ 本地 FFmpeg 库加载成功');
+                    } catch (error) {
+                        console.warn('⚠️ 本地库加载失败，切换到 CDN');
+                        await loadScript('https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js');
+                        await loadScript('https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js');
+                    }
+                } else {
+                    console.log('🌐 生产环境：加载 CDN 库...');
+                    await loadScript('https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js');
+                    await loadScript('https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js');
+                }
+                
+                // 库加载完成后初始化应用
+                if (typeof init === 'function') {
+                    init();
+                }
+            } catch (error) {
+                console.error('❌ FFmpeg 库加载失败:', error);
+                document.body.innerHTML = `
+                    <div style="text-align: center; padding: 50px; color: red;">
+                        <h2>❌ FFmpeg 库加载失败</h2>
+                        <p>错误信息: ${error.message}</p>
+                        <p>请检查网络连接或稍后重试</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 页面加载完成后加载库
+        document.addEventListener('DOMContentLoaded', loadFFmpegLibraries);
+    </script>
+    <script>
+        // 等待库加载完成后再初始化变量
+        let FFmpeg, fetchFile, toBlobURL;
         let ffmpeg = null;
         let currentFile = null;
         let isFFmpegLoaded = false;
+        
+        // 全局环境检测（已在上面的脚本中定义）
+        console.log('运行环境:', isLocalDev ? '本地开发' : '生产环境');
 
         // 支持的格式配置
         const supportedFormats = {
@@ -550,18 +603,39 @@
 
         // 初始化
         async function init() {
-            // 检查浏览器兼容性
-            checkBrowserCompatibility();
-            
-            // 检查网络状态
-            checkNetworkStatus();
-            
-            setupEventListeners();
-            renderSupportedFormats();
-            populateFormatSelectors();
-            
-            // 设置初始按钮状态
-            updateConvertButton();
+            try {
+                // 初始化 FFmpeg 相关变量
+                if (typeof FFmpegWASM !== 'undefined') {
+                    FFmpeg = FFmpegWASM.FFmpeg;
+                }
+                if (typeof FFmpegUtil !== 'undefined') {
+                    fetchFile = FFmpegUtil.fetchFile;
+                    toBlobURL = FFmpegUtil.toBlobURL;
+                }
+                
+                if (!FFmpeg || !fetchFile || !toBlobURL) {
+                    throw new Error('FFmpeg 库未正确加载');
+                }
+                
+                console.log('✅ FFmpeg 库变量初始化完成');
+                
+                // 检查浏览器兼容性
+                checkBrowserCompatibility();
+                
+                // 检查网络状态
+                checkNetworkStatus();
+                
+                setupEventListeners();
+                renderSupportedFormats();
+                populateFormatSelectors();
+                
+                // 设置初始按钮状态
+                updateConvertButton();
+                
+            } catch (error) {
+                console.error('❌ 应用初始化失败:', error);
+                showError('应用初始化失败: ' + error.message);
+            }
         }
 
         // 预加载 FFmpeg
@@ -578,11 +652,38 @@
 
         // 检查网络状态
         function checkNetworkStatus() {
-            // 显示网络提示
-            document.getElementById('networkNotice').style.display = 'block';
+            const networkNotice = document.getElementById('networkNotice');
             
-            // 检查网络连接状态
-            if ('connection' in navigator) {
+            if (isLocalDev) {
+                // 本地开发环境提示
+                networkNotice.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.5rem;">🏠</span>
+                        <div>
+                            <strong>本地开发模式</strong><br>
+                            <span style="font-size: 0.9rem; color: #856404;">FFmpeg 将从本地文件加载，速度更快！如果本地文件不存在，将自动切换到 CDN。</span>
+                        </div>
+                    </div>
+                `;
+                networkNotice.style.background = '#d1ecf1';
+                networkNotice.style.borderColor = '#bee5eb';
+            } else {
+                // 生产环境提示
+                networkNotice.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.5rem;">⚠️</span>
+                        <div>
+                            <strong>网络加载模式</strong><br>
+                            <span style="font-size: 0.9rem; color: #856404;">FFmpeg 核心文件约 31MB，建议在稳定网络环境下使用。首次加载可能需要1-3分钟。</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            networkNotice.style.display = 'block';
+            
+            // 只在生产环境检查网络连接状态
+            if (!isLocalDev && 'connection' in navigator) {
                 const connection = navigator.connection;
                 const networkType = connection.effectiveType;
                 
@@ -600,7 +701,9 @@
             });
             
             window.addEventListener('offline', () => {
-                showError('网络连接已断开，请检查网络连接');
+                if (!isLocalDev) {
+                    showError('网络连接已断开，请检查网络连接');
+                }
             });
         }
 
@@ -770,9 +873,26 @@
 
         // 带重试的加载函数
         async function loadWithRetry(maxRetries = 3) {
+            // 本地开发环境优先使用本地文件
+            if (isLocalDev) {
+                try {
+                    updateProgress('正在从本地加载 FFmpeg...', 10);
+                    await loadFromLocal();
+                    console.log('✅ FFmpeg 本地加载成功');
+                    return;
+                } catch (error) {
+                    console.error('❌ 本地加载失败:', error);
+                    appendLog(`本地加载失败: ${error.message}`);
+                    appendLog('正在切换到 CDN 加载...');
+                    updateProgress('本地加载失败，切换到CDN...', 20);
+                    // 继续执行 CDN 加载
+                }
+            }
+            
+            // CDN加载（生产环境或本地加载失败时）
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
-                    updateProgress(`正在加载 FFmpeg (尝试 ${attempt}/${maxRetries})...`, (attempt - 1) * 10);
+                    updateProgress(`正在从CDN加载 FFmpeg (尝试 ${attempt}/${maxRetries})...`, (attempt - 1) * 10 + 30);
                     
                     const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
                     
@@ -790,20 +910,58 @@
                     await Promise.race([loadPromise, timeoutPromise]);
                     
                     // 如果成功，跳出重试循环
-                    console.log(`FFmpeg 加载成功 (尝试 ${attempt})`);
+                    console.log(`FFmpeg CDN加载成功 (尝试 ${attempt})`);
                     return;
                     
                 } catch (error) {
-                    console.warn(`加载尝试 ${attempt} 失败:`, error.message);
+                    console.warn(`CDN加载尝试 ${attempt} 失败:`, error.message);
                     
                     if (attempt === maxRetries) {
                         throw error;
                     }
                     
                     // 等待后重试
-                    updateProgress(`加载失败，${2}秒后重试...`, attempt * 20);
+                    updateProgress(`加载失败，${2}秒后重试...`, attempt * 20 + 30);
                     await new Promise(resolve => setTimeout(resolve, 2000));
                 }
+            }
+        }
+
+        // 从本地加载 FFmpeg
+        async function loadFromLocal() {
+            const baseURL = window.location.origin + '/assets/ffmpeg';
+            
+            console.log('尝试从本地加载:', baseURL);
+            
+            try {
+                // 先测试文件是否可以访问
+                const jsResponse = await fetch(`${baseURL}/ffmpeg-core.js`);
+                const wasmResponse = await fetch(`${baseURL}/ffmpeg-core.wasm`);
+                
+                if (!jsResponse.ok) {
+                    throw new Error(`JavaScript文件加载失败: ${jsResponse.status} ${jsResponse.statusText}`);
+                }
+                if (!wasmResponse.ok) {
+                    throw new Error(`WASM文件加载失败: ${wasmResponse.status} ${wasmResponse.statusText}`);
+                }
+                
+                console.log('本地文件访问成功，开始转换为 Blob URL...');
+                
+                const coreURL = await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript');
+                const wasmURL = await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm');
+                
+                console.log('Blob URL 创建成功，开始加载 FFmpeg...');
+                
+                await ffmpeg.load({
+                    coreURL: coreURL,
+                    wasmURL: wasmURL,
+                });
+                
+                console.log('FFmpeg 本地加载完成！');
+                
+            } catch (error) {
+                console.error('本地加载详细错误:', error);
+                throw new Error(`本地加载失败: ${error.message}`);
             }
         }
 
@@ -1128,8 +1286,7 @@
             logSection.scrollTop = logSection.scrollHeight;
         }
 
-        // 初始化应用
-        init();
+        // 应用将由库加载脚本自动初始化
     </script>
 </body>
 </html> 
