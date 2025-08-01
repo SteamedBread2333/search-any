@@ -540,6 +540,9 @@
             setupEventListeners();
             renderSupportedFormats();
             populateFormatSelectors();
+            
+            // 设置初始按钮状态
+            updateConvertButton();
         }
 
         // 检查浏览器兼容性
@@ -616,6 +619,9 @@
             // 显示转换选项
             document.getElementById('conversionSection').style.display = 'block';
             
+            // 更新按钮状态
+            updateConvertButton();
+            
             // 确保 FFmpeg 已加载
             if (!isFFmpegLoaded) {
                 await loadFFmpeg();
@@ -686,6 +692,7 @@
                 
                 isFFmpegLoaded = true;
                 hideProgress();
+                updateConvertButton();
                 showSuccess('FFmpeg 加载完成！');
             } catch (error) {
                 console.error('FFmpeg 加载失败:', error);
@@ -694,8 +701,15 @@
                 // 尝试备用加载方案
                 try {
                     await loadFFmpegFallback();
+                    // 确保状态正确更新
+                    isFFmpegLoaded = true;
+                    hideProgress();
+                    updateConvertButton();
+                    showSuccess('FFmpeg 加载完成（备用方案）！');
                 } catch (fallbackError) {
                     console.error('备用方案也失败:', fallbackError);
+                    isFFmpegLoaded = false;
+                    hideProgress();
                     showError('FFmpeg 加载失败，请检查网络连接或稍后重试');
                 }
             }
@@ -722,9 +736,8 @@
                         wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
                     });
                     
-                    isFFmpegLoaded = true;
-                    hideProgress();
-                    showSuccess(`FFmpeg 加载完成（使用 CDN ${i + 1}）！`);
+                    // 备用方案成功，状态将在主函数中设置
+                    console.log(`FFmpeg 通过 CDN ${i + 1} 加载成功`);
                     return;
                 } catch (error) {
                     console.warn(`CDN ${i + 1} 失败:`, error);
@@ -767,12 +780,52 @@
             // 根据目标格式显示/隐藏相关选项
             document.getElementById('resolution').parentElement.style.display = isVideo ? 'block' : 'none';
             document.getElementById('fps').parentElement.style.display = isVideo ? 'block' : 'none';
+            
+            // 更新转换按钮状态
+            updateConvertButton();
+        }
+
+        // 更新转换按钮状态
+        function updateConvertButton() {
+            const convertBtn = document.getElementById('convertBtn');
+            const hasFile = !!currentFile;
+            const hasTargetFormat = !!document.getElementById('targetFormat').value;
+            const canConvert = hasFile && isFFmpegLoaded && hasTargetFormat;
+            
+            convertBtn.disabled = !canConvert;
+            
+            if (!hasFile) {
+                convertBtn.textContent = '请先选择文件';
+            } else if (!isFFmpegLoaded) {
+                convertBtn.textContent = 'FFmpeg 加载中...';
+            } else if (!hasTargetFormat) {
+                convertBtn.textContent = '请选择目标格式';
+            } else {
+                convertBtn.textContent = '开始转换';
+            }
+            
+            console.log('按钮状态更新:', { hasFile, isFFmpegLoaded, hasTargetFormat, canConvert });
         }
 
         // 开始转换
         async function startConversion() {
-            if (!currentFile || !isFFmpegLoaded) {
-                showError('请先选择文件并等待 FFmpeg 加载完成');
+            console.log('开始转换检查:', { 
+                hasFile: !!currentFile, 
+                isLoaded: isFFmpegLoaded, 
+                ffmpegInstance: !!ffmpeg 
+            });
+            
+            if (!currentFile) {
+                showError('请先选择文件');
+                return;
+            }
+            
+            if (!isFFmpegLoaded) {
+                showError('FFmpeg 尚未加载完成，请稍候...');
+                // 如果还没加载，尝试加载
+                if (!ffmpeg) {
+                    await loadFFmpeg();
+                }
                 return;
             }
             
