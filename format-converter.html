@@ -502,7 +502,7 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js"></script>
     <script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
     <script>
         const { FFmpeg } = FFmpegWASM;
@@ -534,9 +534,35 @@
 
         // 初始化
         async function init() {
+            // 检查浏览器兼容性
+            checkBrowserCompatibility();
+            
             setupEventListeners();
             renderSupportedFormats();
             populateFormatSelectors();
+        }
+
+        // 检查浏览器兼容性
+        function checkBrowserCompatibility() {
+            // 检查 WebAssembly 支持
+            if (typeof WebAssembly === 'undefined') {
+                showError('您的浏览器不支持 WebAssembly，无法使用此工具。请升级到现代浏览器。');
+                return false;
+            }
+
+            // 检查 SharedArrayBuffer 支持（用于多线程）
+            if (typeof SharedArrayBuffer === 'undefined') {
+                console.warn('SharedArrayBuffer 不可用，将使用单线程模式');
+                // 这不是致命错误，只是性能会差一些
+            }
+
+            // 检查必要的 API
+            if (!window.fetch || !window.URL || !window.Blob) {
+                showError('您的浏览器缺少必要的 API 支持，请升级浏览器。');
+                return false;
+            }
+
+            return true;
         }
 
         // 设置事件监听器
@@ -649,11 +675,13 @@
                     updateProgress(`转换中... ${percentage}%`, percentage);
                 });
 
+                // 使用 toBlobURL 解决跨域问题
                 const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
                 
                 await ffmpeg.load({
                     coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
                     wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+                    // 不使用 worker，避免跨域问题
                 });
                 
                 isFFmpegLoaded = true;
@@ -661,7 +689,49 @@
                 showSuccess('FFmpeg 加载完成！');
             } catch (error) {
                 console.error('FFmpeg 加载失败:', error);
-                showError('FFmpeg 加载失败: ' + error.message);
+                showError('FFmpeg 加载失败: ' + error.message + ' - 正在尝试备用方案...');
+                
+                // 尝试备用加载方案
+                try {
+                    await loadFFmpegFallback();
+                } catch (fallbackError) {
+                    console.error('备用方案也失败:', fallbackError);
+                    showError('FFmpeg 加载失败，请检查网络连接或稍后重试');
+                }
+            }
+        }
+
+        // 备用加载方案
+        async function loadFFmpegFallback() {
+            showProgress('正在尝试备用加载方案...', 0);
+            
+            // 尝试多个 CDN 源
+            const cdnOptions = [
+                'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd',
+                'https://unpkg.com/@ffmpeg/core@0.12.4/dist/umd',
+                'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.4/dist/umd'
+            ];
+            
+            for (let i = 0; i < cdnOptions.length; i++) {
+                try {
+                    const baseURL = cdnOptions[i];
+                    showProgress(`正在尝试 CDN ${i + 1}/${cdnOptions.length}...`, (i / cdnOptions.length) * 50);
+                    
+                    await ffmpeg.load({
+                        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+                        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+                    });
+                    
+                    isFFmpegLoaded = true;
+                    hideProgress();
+                    showSuccess(`FFmpeg 加载完成（使用 CDN ${i + 1}）！`);
+                    return;
+                } catch (error) {
+                    console.warn(`CDN ${i + 1} 失败:`, error);
+                    if (i === cdnOptions.length - 1) {
+                        throw error;
+                    }
+                }
             }
         }
 
