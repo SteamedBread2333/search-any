@@ -1,0 +1,22 @@
+{
+  "name": "format-converter",
+  "version": "1.0.0",
+  "description": "基于 FFmpeg.wasm 的格式转换工厂",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "download-ffmpeg": "node scripts/download-ffmpeg.js"
+  },
+  "keywords": [
+    "ffmpeg",
+    "format-converter",
+    "wasm",
+    "video",
+    "audio"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
+} 
