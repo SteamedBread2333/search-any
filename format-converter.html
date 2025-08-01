@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>格式转换工厂 - FFmpeg.wasm</title>
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --error-color: #ea4335;
+            --warning-color: #fbbc04;
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section.dragover {
+            border-color: var(--primary-color);
+            background: rgba(66, 133, 244, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            background: #3367d6;
+        }
+
+        .file-info {
+            display: none;
+            background: #e8f5e8;
+            border: 1px solid var(--secondary-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .file-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .file-detail {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .file-detail-label {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 5px;
+        }
+
+        .file-detail-value {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .conversion-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .format-selector {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .format-group {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .format-group h3 {
+            margin-bottom: 15px;
+            color: var(--text-color);
+            text-align: center;
+        }
+
+        .format-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .options-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .option-group {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .option-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .option-group input,
+        .option-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .convert-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .convert-btn:hover {
+            background: #2d8f3f;
+        }
+
+        .convert-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .progress-section {
+            display: none;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 1.1rem;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .log-section {
+            background: #1a1a1a;
+            color: #00ff00;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .download-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: #2d8f3f;
+        }
+
+        .supported-formats {
+            margin-top: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .supported-formats h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .format-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .format-category {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .format-category h4 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .format-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .format-tag {
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: var(--error-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .format-selector {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .arrow {
+                transform: rotate(90deg);
+            }
+
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">← 返回首页</a>
+            <h1>🔄 格式转换工厂</h1>
+            <p>基于 FFmpeg.wasm 的强大媒体格式转换工具</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 文件上传区域 -->
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">拖放文件到这里或点击选择文件</div>
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">选择文件</button>
+                <input type="file" id="fileInput" class="file-input" accept="*/*">
+            </div>
+
+            <!-- 文件信息 -->
+            <div class="file-info" id="fileInfo">
+                <div class="file-details" id="fileDetails"></div>
+            </div>
+
+            <!-- 错误信息 -->
+            <div class="error-message" id="errorMessage"></div>
+
+            <!-- 转换设置 -->
+            <div class="conversion-section" id="conversionSection">
+                <div class="format-selector">
+                    <div class="format-group">
+                        <h3>源格式</h3>
+                        <select class="format-select" id="sourceFormat" disabled>
+                            <option value="">自动检测</option>
+                        </select>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="format-group">
+                        <h3>目标格式</h3>
+                        <select class="format-select" id="targetFormat">
+                            <option value="">请选择格式</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 转换选项 -->
+                <div class="options-section">
+                    <h3 style="text-align: center; margin-bottom: 20px;">转换选项</h3>
+                    <div class="options-grid">
+                        <div class="option-group">
+                            <label for="quality">质量</label>
+                            <select id="quality">
+                                <option value="high">高质量</option>
+                                <option value="medium" selected>中等质量</option>
+                                <option value="low">低质量</option>
+                                <option value="custom">自定义</option>
+                            </select>
+                        </div>
+                        <div class="option-group">
+                            <label for="bitrate">比特率 (kbps)</label>
+                            <input type="number" id="bitrate" placeholder="自动" min="64" max="10000">
+                        </div>
+                        <div class="option-group">
+                            <label for="resolution">分辨率</label>
+                            <select id="resolution">
+                                <option value="">保持原始</option>
+                                <option value="1920x1080">1080p (1920x1080)</option>
+                                <option value="1280x720">720p (1280x720)</option>
+                                <option value="854x480">480p (854x480)</option>
+                                <option value="640x360">360p (640x360)</option>
+                            </select>
+                        </div>
+                        <div class="option-group">
+                            <label for="fps">帧率</label>
+                            <select id="fps">
+                                <option value="">保持原始</option>
+                                <option value="60">60 FPS</option>
+                                <option value="30">30 FPS</option>
+                                <option value="24">24 FPS</option>
+                                <option value="15">15 FPS</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="convert-btn" id="convertBtn" onclick="startConversion()">开始转换</button>
+            </div>
+
+            <!-- 进度显示 -->
+            <div class="progress-section" id="progressSection">
+                <div class="progress-text" id="progressText">准备中...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="log-section" id="logSection"></div>
+            </div>
+
+            <!-- 结果下载 -->
+            <div class="result-section" id="resultSection">
+                <h3>转换完成！</h3>
+                <a href="#" class="download-btn" id="downloadBtn" download>下载文件</a>
+            </div>
+
+            <!-- 支持的格式 -->
+            <div class="supported-formats">
+                <h3>支持的格式</h3>
+                <div class="format-categories" id="formatCategories">
+                    <!-- 格式列表将通过 JavaScript 动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+    <script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+    <script>
+        const { FFmpeg } = FFmpegWASM;
+        const { fetchFile, toBlobURL } = FFmpegUtil;
+
+        let ffmpeg = null;
+        let currentFile = null;
+        let isFFmpegLoaded = false;
+
+        // 支持的格式配置
+        const supportedFormats = {
+            video: {
+                name: '视频格式',
+                formats: ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv', 'm4v', '3gp', 'ogv', 'mpg', 'mpeg', 'ts', 'mts', 'm2ts']
+            },
+            audio: {
+                name: '音频格式',
+                formats: ['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'm4a', 'opus', 'ac3', 'dts', 'amr', 'aiff', 'au']
+            },
+            image: {
+                name: '图片格式',
+                formats: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'svg', 'psd', 'raw']
+            },
+            document: {
+                name: '文档格式',
+                formats: ['pdf', 'txt', 'rtf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']
+            }
+        };
+
+        // 初始化
+        async function init() {
+            setupEventListeners();
+            renderSupportedFormats();
+            populateFormatSelectors();
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            const uploadSection = document.getElementById('uploadSection');
+            const fileInput = document.getElementById('fileInput');
+
+            // 拖拽上传
+            uploadSection.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadSection.classList.add('dragover');
+            });
+
+            uploadSection.addEventListener('dragleave', () => {
+                uploadSection.classList.remove('dragover');
+            });
+
+            uploadSection.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadSection.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileSelect(files[0]);
+                }
+            });
+
+            // 文件选择
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileSelect(e.target.files[0]);
+                }
+            });
+
+            // 格式选择变化
+            document.getElementById('targetFormat').addEventListener('change', updateConversionOptions);
+        }
+
+        // 处理文件选择
+        async function handleFileSelect(file) {
+            currentFile = file;
+            
+            // 显示文件信息
+            displayFileInfo(file);
+            
+            // 检测文件格式
+            const detectedFormat = detectFileFormat(file.name);
+            if (detectedFormat) {
+                document.getElementById('sourceFormat').value = detectedFormat;
+            }
+            
+            // 显示转换选项
+            document.getElementById('conversionSection').style.display = 'block';
+            
+            // 确保 FFmpeg 已加载
+            if (!isFFmpegLoaded) {
+                await loadFFmpeg();
+            }
+        }
+
+        // 显示文件信息
+        function displayFileInfo(file) {
+            const fileInfo = document.getElementById('fileInfo');
+            const fileDetails = document.getElementById('fileDetails');
+            
+            const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+            const lastModified = new Date(file.lastModified).toLocaleString();
+            
+            fileDetails.innerHTML = `
+                <div class="file-detail">
+                    <div class="file-detail-label">文件名</div>
+                    <div class="file-detail-value">${file.name}</div>
+                </div>
+                <div class="file-detail">
+                    <div class="file-detail-label">文件大小</div>
+                    <div class="file-detail-value">${sizeInMB} MB</div>
+                </div>
+                <div class="file-detail">
+                    <div class="file-detail-label">文件类型</div>
+                    <div class="file-detail-value">${file.type || '未知'}</div>
+                </div>
+                <div class="file-detail">
+                    <div class="file-detail-label">修改时间</div>
+                    <div class="file-detail-value">${lastModified}</div>
+                </div>
+            `;
+            
+            fileInfo.style.display = 'block';
+        }
+
+        // 检测文件格式
+        function detectFileFormat(filename) {
+            const extension = filename.toLowerCase().split('.').pop();
+            return extension;
+        }
+
+        // 加载 FFmpeg
+        async function loadFFmpeg() {
+            try {
+                showProgress('正在加载 FFmpeg 核心文件...', 0);
+                
+                ffmpeg = new FFmpeg();
+                
+                ffmpeg.on('log', ({ message }) => {
+                    console.log(message);
+                    appendLog(message);
+                });
+                
+                ffmpeg.on('progress', ({ progress, time }) => {
+                    const percentage = Math.round(progress * 100);
+                    updateProgress(`转换中... ${percentage}%`, percentage);
+                });
+
+                const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+                
+                await ffmpeg.load({
+                    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+                    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+                });
+                
+                isFFmpegLoaded = true;
+                hideProgress();
+                showSuccess('FFmpeg 加载完成！');
+            } catch (error) {
+                console.error('FFmpeg 加载失败:', error);
+                showError('FFmpeg 加载失败: ' + error.message);
+            }
+        }
+
+        // 填充格式选择器
+        function populateFormatSelectors() {
+            const targetFormat = document.getElementById('targetFormat');
+            
+            // 清空现有选项
+            targetFormat.innerHTML = '<option value="">请选择格式</option>';
+            
+            // 添加所有支持的格式
+            Object.values(supportedFormats).forEach(category => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = category.name;
+                
+                category.formats.forEach(format => {
+                    const option = document.createElement('option');
+                    option.value = format;
+                    option.textContent = format.toUpperCase();
+                    optgroup.appendChild(option);
+                });
+                
+                targetFormat.appendChild(optgroup);
+            });
+        }
+
+        // 更新转换选项
+        function updateConversionOptions() {
+            const targetFormat = document.getElementById('targetFormat').value;
+            const isVideo = supportedFormats.video.formats.includes(targetFormat);
+            const isAudio = supportedFormats.audio.formats.includes(targetFormat);
+            
+            // 根据目标格式显示/隐藏相关选项
+            document.getElementById('resolution').parentElement.style.display = isVideo ? 'block' : 'none';
+            document.getElementById('fps').parentElement.style.display = isVideo ? 'block' : 'none';
+        }
+
+        // 开始转换
+        async function startConversion() {
+            if (!currentFile || !isFFmpegLoaded) {
+                showError('请先选择文件并等待 FFmpeg 加载完成');
+                return;
+            }
+            
+            const targetFormat = document.getElementById('targetFormat').value;
+            if (!targetFormat) {
+                showError('请选择目标格式');
+                return;
+            }
+            
+            try {
+                // 禁用转换按钮
+                document.getElementById('convertBtn').disabled = true;
+                
+                // 显示进度
+                showProgress('正在准备转换...', 0);
+                
+                // 写入输入文件
+                const inputFileName = `input.${detectFileFormat(currentFile.name)}`;
+                const outputFileName = `output.${targetFormat}`;
+                
+                await ffmpeg.writeFile(inputFileName, await fetchFile(currentFile));
+                
+                // 构建 FFmpeg 命令
+                const command = buildFFmpegCommand(inputFileName, outputFileName);
+                
+                showProgress('正在转换文件...', 10);
+                
+                // 执行转换
+                await ffmpeg.exec(command);
+                
+                // 读取输出文件
+                const data = await ffmpeg.readFile(outputFileName);
+                
+                // 创建下载链接
+                const blob = new Blob([data.buffer], { type: getMimeType(targetFormat) });
+                const url = URL.createObjectURL(blob);
+                
+                const downloadBtn = document.getElementById('downloadBtn');
+                downloadBtn.href = url;
+                downloadBtn.download = `converted.${targetFormat}`;
+                
+                // 显示结果
+                hideProgress();
+                document.getElementById('resultSection').style.display = 'block';
+                showSuccess('转换完成！');
+                
+            } catch (error) {
+                console.error('转换失败:', error);
+                showError('转换失败: ' + error.message);
+                hideProgress();
+            } finally {
+                document.getElementById('convertBtn').disabled = false;
+            }
+        }
+
+        // 构建 FFmpeg 命令
+        function buildFFmpegCommand(inputFile, outputFile) {
+            const command = ['-i', inputFile];
+            
+            // 质量设置
+            const quality = document.getElementById('quality').value;
+            const bitrate = document.getElementById('bitrate').value;
+            const resolution = document.getElementById('resolution').value;
+            const fps = document.getElementById('fps').value;
+            
+            // 添加质量参数
+            if (quality === 'high') {
+                command.push('-crf', '18');
+            } else if (quality === 'medium') {
+                command.push('-crf', '23');
+            } else if (quality === 'low') {
+                command.push('-crf', '28');
+            }
+            
+            // 添加比特率
+            if (bitrate) {
+                command.push('-b:v', `${bitrate}k`);
+            }
+            
+            // 添加分辨率
+            if (resolution) {
+                command.push('-s', resolution);
+            }
+            
+            // 添加帧率
+            if (fps) {
+                command.push('-r', fps);
+            }
+            
+            // 输出文件
+            command.push(outputFile);
+            
+            return command;
+        }
+
+        // 获取 MIME 类型
+        function getMimeType(format) {
+            const mimeTypes = {
+                'mp4': 'video/mp4',
+                'webm': 'video/webm',
+                'avi': 'video/avi',
+                'mov': 'video/quicktime',
+                'mp3': 'audio/mpeg',
+                'wav': 'audio/wav',
+                'ogg': 'audio/ogg',
+                'jpg': 'image/jpeg',
+                'jpeg': 'image/jpeg',
+                'png': 'image/png',
+                'gif': 'image/gif',
+                'webp': 'image/webp'
+            };
+            return mimeTypes[format] || 'application/octet-stream';
+        }
+
+        // 渲染支持的格式
+        function renderSupportedFormats() {
+            const container = document.getElementById('formatCategories');
+            
+            Object.values(supportedFormats).forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'format-category';
+                
+                const title = document.createElement('h4');
+                title.textContent = category.name;
+                categoryDiv.appendChild(title);
+                
+                const formatList = document.createElement('div');
+                formatList.className = 'format-list';
+                
+                category.formats.forEach(format => {
+                    const tag = document.createElement('span');
+                    tag.className = 'format-tag';
+                    tag.textContent = format.toUpperCase();
+                    formatList.appendChild(tag);
+                });
+                
+                categoryDiv.appendChild(formatList);
+                container.appendChild(categoryDiv);
+            });
+        }
+
+        // 进度和状态显示函数
+        function showProgress(text, percentage) {
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('logSection').style.display = 'block';
+            document.getElementById('progressText').textContent = text;
+            document.getElementById('progressFill').style.width = percentage + '%';
+        }
+
+        function updateProgress(text, percentage) {
+            document.getElementById('progressText').textContent = text;
+            document.getElementById('progressFill').style.width = percentage + '%';
+        }
+
+        function hideProgress() {
+            document.getElementById('progressSection').style.display = 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            // 可以添加成功提示的实现
+            console.log('Success:', message);
+        }
+
+        function appendLog(message) {
+            const logSection = document.getElementById('logSection');
+            logSection.textContent += message + '\n';
+            logSection.scrollTop = logSection.scrollHeight;
+        }
+
+        // 初始化应用
+        init();
+    </script>
+</body>
+</html> 
