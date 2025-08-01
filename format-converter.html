@@ -400,12 +400,28 @@
         </div>
 
         <div class="main-content">
+            <!-- 网络提示 -->
+            <div class="network-notice" id="networkNotice" style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin-bottom: 20px; display: none;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.5rem;">⚠️</span>
+                    <div>
+                        <strong>网络提示</strong><br>
+                        <span style="font-size: 0.9rem; color: #856404;">FFmpeg 核心文件约 31MB，建议在稳定网络环境下使用。首次加载可能需要1-3分钟。</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- 文件上传区域 -->
             <div class="upload-section" id="uploadSection">
                 <div class="upload-icon">📁</div>
                 <div class="upload-text">拖放文件到这里或点击选择文件</div>
                 <button class="upload-btn" onclick="document.getElementById('fileInput').click()">选择文件</button>
                 <input type="file" id="fileInput" class="file-input" accept="*/*">
+                <div style="margin-top: 15px; font-size: 0.9rem; color: #666;">
+                    <span id="preloadBtn" style="color: #4285f4; cursor: pointer; text-decoration: underline;" onclick="preloadFFmpeg()">
+                        点击预加载 FFmpeg (推荐)
+                    </span>
+                </div>
             </div>
 
             <!-- 文件信息 -->
@@ -537,12 +553,55 @@
             // 检查浏览器兼容性
             checkBrowserCompatibility();
             
+            // 检查网络状态
+            checkNetworkStatus();
+            
             setupEventListeners();
             renderSupportedFormats();
             populateFormatSelectors();
             
             // 设置初始按钮状态
             updateConvertButton();
+        }
+
+        // 预加载 FFmpeg
+        async function preloadFFmpeg() {
+            const preloadBtn = document.getElementById('preloadBtn');
+            preloadBtn.style.display = 'none';
+            
+            if (!isFFmpegLoaded) {
+                await loadFFmpeg();
+            } else {
+                showSuccess('FFmpeg 已经加载完成！');
+            }
+        }
+
+        // 检查网络状态
+        function checkNetworkStatus() {
+            // 显示网络提示
+            document.getElementById('networkNotice').style.display = 'block';
+            
+            // 检查网络连接状态
+            if ('connection' in navigator) {
+                const connection = navigator.connection;
+                const networkType = connection.effectiveType;
+                
+                if (networkType === 'slow-2g' || networkType === '2g') {
+                    showError('检测到较慢的网络连接，FFmpeg 加载可能需要较长时间，建议在 WiFi 环境下使用。');
+                } else if (networkType === '3g') {
+                    console.warn('检测到 3G 网络，建议耐心等待加载完成');
+                }
+            }
+            
+            // 监听网络状态变化
+            window.addEventListener('online', () => {
+                console.log('网络已连接');
+                hideError();
+            });
+            
+            window.addEventListener('offline', () => {
+                showError('网络连接已断开，请检查网络连接');
+            });
         }
 
         // 检查浏览器兼容性
@@ -667,7 +726,7 @@
         // 加载 FFmpeg
         async function loadFFmpeg() {
             try {
-                showProgress('正在加载 FFmpeg 核心文件...', 0);
+                showProgress('正在加载 FFmpeg 核心文件 (~31MB)...', 0);
                 
                 ffmpeg = new FFmpeg();
                 
@@ -681,14 +740,8 @@
                     updateProgress(`转换中... ${percentage}%`, percentage);
                 });
 
-                // 使用 toBlobURL 解决跨域问题
-                const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
-                
-                await ffmpeg.load({
-                    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-                    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-                    // 不使用 worker，避免跨域问题
-                });
+                // 使用重试机制加载大文件
+                await loadWithRetry();
                 
                 isFFmpegLoaded = true;
                 hideProgress();
@@ -710,7 +763,46 @@
                     console.error('备用方案也失败:', fallbackError);
                     isFFmpegLoaded = false;
                     hideProgress();
-                    showError('FFmpeg 加载失败，请检查网络连接或稍后重试');
+                    showError('FFmpeg 加载失败，文件较大(31MB)，请检查网络连接或稍后重试。建议使用稳定的网络环境。');
+                }
+            }
+        }
+
+        // 带重试的加载函数
+        async function loadWithRetry(maxRetries = 3) {
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    updateProgress(`正在加载 FFmpeg (尝试 ${attempt}/${maxRetries})...`, (attempt - 1) * 10);
+                    
+                    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+                    
+                    // 使用超时控制
+                    const loadPromise = ffmpeg.load({
+                        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+                        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+                    });
+                    
+                    // 设置超时 (60秒)
+                    const timeoutPromise = new Promise((_, reject) => {
+                        setTimeout(() => reject(new Error('加载超时，请检查网络连接')), 60000);
+                    });
+                    
+                    await Promise.race([loadPromise, timeoutPromise]);
+                    
+                    // 如果成功，跳出重试循环
+                    console.log(`FFmpeg 加载成功 (尝试 ${attempt})`);
+                    return;
+                    
+                } catch (error) {
+                    console.warn(`加载尝试 ${attempt} 失败:`, error.message);
+                    
+                    if (attempt === maxRetries) {
+                        throw error;
+                    }
+                    
+                    // 等待后重试
+                    updateProgress(`加载失败，${2}秒后重试...`, attempt * 20);
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                 }
             }
         }
@@ -719,33 +811,60 @@
         async function loadFFmpegFallback() {
             showProgress('正在尝试备用加载方案...', 0);
             
-            // 尝试多个 CDN 源
+            // 尝试多个 CDN 源和版本
             const cdnOptions = [
-                'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd',
-                'https://unpkg.com/@ffmpeg/core@0.12.4/dist/umd',
-                'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.4/dist/umd'
+                {
+                    name: 'jsDelivr CDN (0.12.6)',
+                    url: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd',
+                },
+                {
+                    name: 'unpkg CDN (0.12.4)',
+                    url: 'https://unpkg.com/@ffmpeg/core@0.12.4/dist/umd',
+                },
+                {
+                    name: 'jsDelivr CDN (0.12.4)', 
+                    url: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.4/dist/umd',
+                },
+                {
+                    name: 'jsDelivr CDN (0.11.0 - 轻量版)',
+                    url: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/umd',
+                }
             ];
             
             for (let i = 0; i < cdnOptions.length; i++) {
                 try {
-                    const baseURL = cdnOptions[i];
-                    showProgress(`正在尝试 CDN ${i + 1}/${cdnOptions.length}...`, (i / cdnOptions.length) * 50);
+                    const option = cdnOptions[i];
+                    showProgress(`正在尝试 ${option.name} (${i + 1}/${cdnOptions.length})...`, (i / cdnOptions.length) * 80);
                     
-                    await ffmpeg.load({
-                        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-                        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-                    });
+                    // 为每个CDN也添加超时和重试
+                    await loadFromCDNWithTimeout(option.url, 45000); // 45秒超时
                     
-                    // 备用方案成功，状态将在主函数中设置
-                    console.log(`FFmpeg 通过 CDN ${i + 1} 加载成功`);
+                    console.log(`FFmpeg 通过 ${option.name} 加载成功`);
                     return;
                 } catch (error) {
-                    console.warn(`CDN ${i + 1} 失败:`, error);
+                    console.warn(`${cdnOptions[i].name} 失败:`, error.message);
                     if (i === cdnOptions.length - 1) {
                         throw error;
                     }
+                    
+                    // 短暂等待后尝试下一个CDN
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
+        }
+
+        // 从指定CDN加载，带超时控制
+        async function loadFromCDNWithTimeout(baseURL, timeout = 45000) {
+            const loadPromise = ffmpeg.load({
+                coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+                wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+            });
+            
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error(`CDN 加载超时 (${timeout/1000}秒)`)), timeout);
+            });
+            
+            return Promise.race([loadPromise, timeoutPromise]);
         }
 
         // 填充格式选择器
@@ -991,6 +1110,11 @@
             setTimeout(() => {
                 errorDiv.style.display = 'none';
             }, 5000);
+        }
+
+        function hideError() {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.style.display = 'none';
         }
 
         function showSuccess(message) {
