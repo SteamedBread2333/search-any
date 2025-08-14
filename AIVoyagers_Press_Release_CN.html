@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 突破性创新！AIVoyagers重新定义酒店数据智能 | 科技新闻</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a23 0%, #1a1a3a 50%, #2d1b69 100%);
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(45deg, #00d4ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .breaking-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .breaking-dot {
+            width: 8px;
+            height: 8px;
+            background: #00d4ff;
+            border-radius: 50%;
+            animation: breathe 2s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+        
+        .breaking-text {
+            color: #ffffff;
+            font-weight: 600;
+        }
+        
+        .lang-switch {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .lang-switch:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .lang-icon {
+            font-size: 16px;
+        }
+        
+        .lang-text {
+            font-size: 13px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes breathe {
+            0%, 100% { 
+                opacity: 1; 
+                transform: scale(1);
+                box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            }
+            50% { 
+                opacity: 0.7; 
+                transform: scale(1.2);
+                box-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
+            }
+        }
+        
+        .hero {
+            padding: 80px 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00d4ff, #ffffff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #b8c6db;
+            font-weight: 300;
+        }
+        
+        .hero-description {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            color: #e2e8f0;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+        
+        .section {
+            padding: 80px 0;
+            position: relative;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 60px;
+            background: linear-gradient(45deg, #00d4ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #00d4ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            color: #b8c6db;
+            font-weight: 500;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #00d4ff;
+        }
+        
+        .feature-description {
+            color: #b8c6db;
+            line-height: 1.7;
+        }
+        
+        .quote-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 30px;
+            padding: 60px;
+            text-align: center;
+            margin: 60px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .quote-text {
+            font-size: 1.8rem;
+            font-style: italic;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+        
+        .quote-author {
+            font-size: 1.2rem;
+            color: #b8c6db;
+            font-weight: 600;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .team-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .team-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .team-emoji {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .team-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #00d4ff;
+        }
+        
+        .team-role {
+            font-size: 1rem;
+            color: #ff00ff;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .team-description {
+            font-style: italic;
+            color: #b8c6db;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .team-motto {
+            font-size: 0.9rem;
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+        
+        .footer {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 40px 0;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-text {
+            color: #b8c6db;
+            font-size: 1rem;
+        }
+        
+        .tech-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.03;
+            background-image: 
+                radial-gradient(circle at 25% 25%, #00d4ff 2px, transparent 2px),
+                radial-gradient(circle at 75% 75%, #ff00ff 2px, transparent 2px);
+            background-size: 50px 50px;
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .highlight {
+            background: linear-gradient(45deg, #00d4ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+        
+        .comparison-container {
+            margin: 40px 0;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+        
+        .comparison-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            transition: all 0.3s ease;
+        }
+        
+        .comparison-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .comparison-card.traditional {
+            border-left: 4px solid #ff4757;
+        }
+        
+        .comparison-card.mcp {
+            border-left: 4px solid #00d4ff;
+        }
+        
+        .comparison-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .comparison-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .comparison-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+        
+        .comparison-subtitle {
+            color: #b8c6db;
+            font-size: 1rem;
+        }
+        
+        .comparison-flow {
+            margin-bottom: 30px;
+        }
+        
+        .flow-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+        
+        .flow-arrow {
+            text-align: center;
+            color: #667eea;
+            font-size: 1.5rem;
+            margin: 10px 0;
+        }
+        
+        .comparison-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+        }
+        
+        .stat-label {
+            color: #b8c6db;
+            font-weight: 500;
+        }
+        
+        .stat-value {
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .stat-value.bad {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+        
+        .stat-value.good {
+            background: rgba(0, 212, 255, 0.2);
+            color: #00d4ff;
+        }
+        
+        .vs-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+        
+        .vs-text {
+            background: linear-gradient(45deg, #ff00ff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2rem;
+            font-weight: 900;
+            padding: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+        }
+        
+        .demo-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            margin: 60px 0;
+        }
+        
+        .demo-image-wrapper {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .demo-image-wrapper:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        }
+        
+        .demo-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 20px;
+        }
+        
+        .demo-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        
+        .demo-badge {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .demo-description {
+            padding: 20px 0;
+        }
+        
+        .demo-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #00d4ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .demo-features {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .demo-feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-feature:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .feature-bullet {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+        }
+        
+        .feature-text {
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        
+        .feature-text strong {
+            color: #00d4ff;
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .hero {
+                padding: 60px 0;
+            }
+            
+            .section {
+                padding: 60px 0;
+            }
+            
+            .stats-grid,
+            .features-grid,
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quote-section {
+                padding: 40px 20px;
+            }
+            
+            .comparison-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .vs-divider {
+                order: 2;
+                height: auto;
+                margin: 20px 0;
+            }
+            
+            .comparison-card.traditional {
+                order: 1;
+            }
+            
+            .comparison-card.mcp {
+                order: 3;
+            }
+            
+            .demo-container {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            
+            .demo-image-wrapper {
+                order: 1;
+            }
+            
+            .demo-description {
+                order: 2;
+                padding: 0;
+            }
+            
+            .header-right {
+                gap: 15px;
+            }
+            
+            .lang-switch {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .lang-text {
+                display: none;
+            }
+            
+            .breaking-badge {
+                font-size: 11px;
+                padding: 8px 14px;
+                gap: 6px;
+            }
+            
+            .breaking-dot {
+                width: 6px;
+                height: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tech-pattern"></div>
+    
+    <header class="header">
+        <div class="container">
+                    <div class="header-content">
+            <div class="logo">🚀 TechNews AI</div>
+            <div class="header-right">
+                <a href="AIVoyagers_Press_Release_EN.html" class="lang-switch">
+                    <span class="lang-icon">🌐</span>
+                    <span class="lang-text">English</span>
+                </a>
+                <div class="breaking-badge">
+                    <span class="breaking-dot"></span>
+                    <span class="breaking-text">重磅发布</span>
+                </div>
+            </div>
+        </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1 class="hero-title">
+                    🌟 震撼发布！AIVoyagers<br>
+                    重新定义酒店数据智能时代
+                </h1>
+                <p class="hero-subtitle">
+                    基于MCP协议的革命性Content GenBI系统正式亮相
+                </p>
+                <p class="hero-description">
+                    告别传统数据孤岛，迎接AI驱动的智能化未来！三位天才工程师用一套系统，
+                    让酒店行业的数据分析从"小时级"飞跃到"秒级"，效率提升惊人的<span class="highlight">3000%</span>！
+                </p>
+                <a href="#details" class="cta-button">🔍 深度解析</a>
+            </div>
+        </section>
+
+        <section class="section" id="details">
+            <div class="container">
+                <h2 class="section-title">💥 颠覆性数据曝光</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">3000%</div>
+                        <div class="stat-label">查询速度提升</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">95%</div>
+                        <div class="stat-label">数据覆盖率</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">35+</div>
+                        <div class="stat-label">专业API接口</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">60%</div>
+                        <div class="stat-label">决策准确性提升</div>
+                    </div>
+                </div>
+                
+                <div class="quote-section">
+                    <p class="quote-text">
+                        "不再是人适应系统，而是系统理解人。我们不只是在写代码，我们在重新定义未来！"
+                    </p>
+                    <p class="quote-author">— AIVoyagers团队宣言</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">🎯 三大核心突破</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🧠</div>
+                        <h3 class="feature-title">智能语言理解</h3>
+                        <p class="feature-description">
+                            革命性的MCP协议让AI真正"听懂"业务语言。销售问"希尔顿在EMEA有多少酒店？"，
+                            系统秒懂并自动调用13个售前API，生成专业报告。<strong>零学习成本，自然对话即可获得专业洞察！</strong>
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3 class="feature-title">实时数据魔法</h3>
+                        <p class="feature-description">
+                            告别传统"查询→数据库→报表→分析"的漫长流程！Content GenBI直接从自然语言到智能洞察，
+                            <strong>响应时间从小时级缩短到秒级</strong>，让数据分析如闪电般迅速。
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <h3 class="feature-title">可视化艺术</h3>
+                        <p class="feature-description">
+                            不只是冰冷的数字！智能可视化引擎自动生成图表、趋势分析和行动建议。
+                            复杂的业务数据瞬间变成<strong>一目了然的视觉盛宴</strong>，让决策变得优雅而精准。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">🎬 实际效果展示</h2>
+                <p style="text-align: center; font-size: 1.2rem; color: #b8c6db; margin-bottom: 60px;">
+                    一图胜千言，看看Content GenBI的真实威力
+                </p>
+                
+                <div class="demo-container">
+                    <div class="demo-image-wrapper">
+                        <img src="GenBI_result_with_report.png" alt="Content GenBI效果展示" class="demo-image">
+                        <div class="demo-overlay">
+                            <div class="demo-badge">🚀 实时演示</div>
+                        </div>
+                    </div>
+                    <div class="demo-description">
+                        <h3 class="demo-title">🎯 智能分析，一键生成</h3>
+                        <div class="demo-features">
+                            <div class="demo-feature">
+                                <div class="feature-bullet">💬</div>
+                                <div class="feature-text">
+                                    <strong>自然语言查询</strong><br>
+                                    用户只需用日常语言描述需求，无需学习复杂的查询语法
+                                </div>
+                            </div>
+                            <div class="demo-feature">
+                                <div class="feature-bullet">🧠</div>
+                                <div class="feature-text">
+                                    <strong>AI智能理解</strong><br>
+                                    系统自动解析意图，调用最合适的API组合
+                                </div>
+                            </div>
+                            <div class="demo-feature">
+                                <div class="feature-bullet">📊</div>
+                                <div class="feature-text">
+                                    <strong>可视化报告</strong><br>
+                                    自动生成专业图表和深度分析报告
+                                </div>
+                            </div>
+                            <div class="demo-feature">
+                                <div class="feature-bullet">⚡</div>
+                                <div class="feature-text">
+                                    <strong>秒级响应</strong><br>
+                                    从查询到结果，整个过程在几秒内完成
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quote-section">
+                    <p class="quote-text">
+                        "这就是未来的数据分析方式 - 简单、智能、高效！"
+                    </p>
+                    <p class="quote-author">— 用户体验反馈</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">⚡ 传统方式 vs MCP方式</h2>
+                <p style="text-align: center; font-size: 1.2rem; color: #b8c6db; margin-bottom: 60px;">
+                    从"聊天机器人"到"业务专家"的华丽转身
+                </p>
+                
+                <div class="comparison-container">
+                    <div class="comparison-grid">
+                        <div class="comparison-card traditional">
+                            <div class="comparison-header">
+                                <div class="comparison-icon">🐌</div>
+                                <h3 class="comparison-title">传统方式</h3>
+                                <p class="comparison-subtitle">繁琐低效的数据获取</p>
+                            </div>
+                            <div class="comparison-flow">
+                                <div class="flow-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">用户提出需求</div>
+                                </div>
+                                <div class="flow-arrow">↓</div>
+                                <div class="flow-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">编写复杂查询</div>
+                                </div>
+                                <div class="flow-arrow">↓</div>
+                                <div class="flow-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">访问多个数据库</div>
+                                </div>
+                                <div class="flow-arrow">↓</div>
+                                <div class="flow-step">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">生成静态报表</div>
+                                </div>
+                                <div class="flow-arrow">↓</div>
+                                <div class="flow-step">
+                                    <div class="step-number">5</div>
+                                    <div class="step-content">人工分析解读</div>
+                                </div>
+                            </div>
+                            <div class="comparison-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">响应时间</span>
+                                    <span class="stat-value bad">数小时</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">学习成本</span>
+                                    <span class="stat-value bad">很高</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">准确性</span>
+                                    <span class="stat-value bad">依赖人工</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="vs-divider">
+                            <div class="vs-text">VS</div>
+                        </div>
+                        
+                        <div class="comparison-card mcp">
+                            <div class="comparison-header">
+                                <div class="comparison-icon">🚀</div>
+                                <h3 class="comparison-title">MCP方式</h3>
+                                <p class="comparison-subtitle">智能高效的AI驱动</p>
+                            </div>
+                            <div class="comparison-flow">
+                                <div class="flow-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">自然语言描述</div>
+                                </div>
+                                <div class="flow-arrow">↓</div>
+                                <div class="flow-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">AI智能理解</div>
+                                </div>
+                                <div class="flow-arrow">↓</div>
+                                <div class="flow-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">实时数据获取</div>
+                                </div>
+                                <div class="flow-arrow">↓</div>
+                                <div class="flow-step">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">智能洞察生成</div>
+                                </div>
+                            </div>
+                            <div class="comparison-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">响应时间</span>
+                                    <span class="stat-value good">秒级</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">学习成本</span>
+                                    <span class="stat-value good">零成本</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">准确性</span>
+                                    <span class="stat-value good">AI保障</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quote-section">
+                    <p class="quote-text">
+                        "让AI真正理解酒店业务，从此告别繁琐的数据查询流程！"
+                    </p>
+                    <p class="quote-author">— Content GenBI核心优势</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">🚀 未来征程</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3 class="feature-title">3个月内</h3>
+                        <p class="feature-description">
+                            覆盖全球Top 100酒店集团，支持20+语言查询，集成主流BI平台。
+                            <strong>让全世界的酒店都能"说话"！</strong>
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🌍</div>
+                        <h3 class="feature-title">1年愿景</h3>
+                        <p class="feature-description">
+                            扩展到零售、餐饮等服务行业，构建行业专用AI Agent生态，
+                            <strong>成为企业数据智能化的标准协议</strong>。
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">✨</div>
+                        <h3 class="feature-title">终极使命</h3>
+                        <p class="feature-description">
+                            让每个企业都拥有专属的AI数据分析师，推动MCP成为行业标准，
+                            <strong>重新定义人与数据的交互方式</strong>！
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="quote-section">
+                    <p class="quote-text">
+                        "AIVoyagers - 数据智能化的先行者，我们正在创造历史！"
+                    </p>
+                    <p class="quote-author">— 科技评论家如是说</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">
+                © 2025 AIVoyagers | 本新闻稿基于Hackathon 2025真实项目 | 
+                <span class="highlight">数据智能化的未来，从这里开始</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // 添加一些动态效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+            
+            // 数字动画
+            const animateNumbers = () => {
+                const numbers = document.querySelectorAll('.stat-number');
+                numbers.forEach(number => {
+                    const target = parseInt(number.textContent.replace(/\D/g, ''));
+                    const suffix = number.textContent.replace(/\d/g, '');
+                    let current = 0;
+                    const increment = target / 50;
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= target) {
+                            current = target;
+                            clearInterval(timer);
+                        }
+                        number.textContent = Math.floor(current) + suffix;
+                    }, 50);
+                });
+            };
+            
+            // 当滚动到统计区域时触发动画
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateNumbers();
+                        observer.unobserve(entry.target);
+                    }
+                });
+            });
+            
+            const statsSection = document.querySelector('.stats-grid');
+            if (statsSection) {
+                observer.observe(statsSection);
+            }
+        });
+    </script>
+</body>
+</html>
