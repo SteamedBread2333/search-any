@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search Any</title>
     <script>
-        document.addEventListener('visibilitychange', function() {
+        document.addEventListener('visibilitychange', function () {
             if (document.hidden) {
                 document.title = '😰 糟糕！程序崩溃啦！';
             } else {
@@ -20,7 +20,14 @@
             }
         });
     </script>
+    <script type="text/javascript" src="assets/dat.gui.min.js"></script>
     <style>
+        canvas {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+        }
+
         :root {
             --bg-color: #ffffff;
             --text-color: #333333;
@@ -79,6 +86,7 @@
             max-width: 480px;
             padding: 0 20px;
             box-sizing: border-box;
+            z-index: 10;
         }
 
         .random-image-container {
@@ -86,18 +94,18 @@
             margin-bottom: 20px;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             max-width: 400px;
             margin-left: auto;
             margin-right: auto;
         }
-        
+
         .random-image {
             width: 100%;
             height: auto;
             display: block;
         }
-        
+
         .search-box {
             width: 100%;
             margin-bottom: 20px;
@@ -207,7 +215,8 @@
             -webkit-box-orient: vertical;
         }
 
-        .delete-shortcut-btn, .edit-shortcut-btn {
+        .delete-shortcut-btn,
+        .edit-shortcut-btn {
             position: absolute;
             top: 5px;
             width: 24px;
@@ -451,15 +460,19 @@
 </head>
 
 <body>
+    <canvas></canvas>
     <div class="toolbox-toggle" id="toolbox-toggle">🧰 工具箱</div>
     <div class="toolbox-drawer" id="toolbox-drawer">
-        <div class="toolbox-item" onclick="isJuejinDomain ? window.open('https://aicoding.juejin.cn/pens/7530109400451645491', '_blank') : window.open('json2typescript.html', '_blank')">
+        <div class="toolbox-item"
+            onclick="isJuejinDomain ? window.open('https://aicoding.juejin.cn/pens/7530109400451645491', '_blank') : window.open('json2typescript.html', '_blank')">
             🔄 JSON转TypeScript
         </div>
-        <div class="toolbox-item" onclick="isJuejinDomain ? window.open('https://aicoding.juejin.cn/pens/7530109291132305459', '_blank') : window.open('image2base64.html', '_blank')">
+        <div class="toolbox-item"
+            onclick="isJuejinDomain ? window.open('https://aicoding.juejin.cn/pens/7530109291132305459', '_blank') : window.open('image2base64.html', '_blank')">
             🖼️ 图片转Base64
         </div>
-        <div class="toolbox-item" onclick="isJuejinDomain ? window.open('https://aicoding.juejin.cn/pens/7530109166636302345', '_blank') : window.open('color-converter.html', '_blank')">
+        <div class="toolbox-item"
+            onclick="isJuejinDomain ? window.open('https://aicoding.juejin.cn/pens/7530109166636302345', '_blank') : window.open('color-converter.html', '_blank')">
             🎨 颜色转换工具
         </div>
         <div class="toolbox-item" onclick="window.open(`https://github.com/SteamedBread2333/rmbg-tool`, '_blank')">
@@ -481,10 +494,12 @@
         <div class="toolbox-item" onclick="window.open(`https://github.com/SteamedBread2333/mtgit`, '_blank')">
             🤝 多仓库合并工具
         </div>
-        <div class="toolbox-item" onclick="isJuejinDomain ? window.open('https://aicoding.juejin.cn/pens/7530109523451645492', '_blank') : window.open('bmi-calculator.html', '_blank')">
+        <div class="toolbox-item"
+            onclick="isJuejinDomain ? window.open('https://aicoding.juejin.cn/pens/7530109523451645492', '_blank') : window.open('bmi-calculator.html', '_blank')">
             ⚖️ BMI 计算器
         </div>
-        <div class="toolbox-item" onclick="isJuejinDomain ? window.open('https://aicoding.juejin.cn/pens/7530109646451645493', '_blank') : window.open('dice-3d.html', '_blank')">
+        <div class="toolbox-item"
+            onclick="isJuejinDomain ? window.open('https://aicoding.juejin.cn/pens/7530109646451645493', '_blank') : window.open('dice-3d.html', '_blank')">
             🎲 3D 掷骰子
         </div>
         <div class="toolbox-item" onclick="window.open('format-converter.html', '_blank')">
@@ -503,7 +518,7 @@
             <input type="text" id="search-input" placeholder="搜索…" autofocus>
             <div class="shortcut-hint"></div>
         </div>
-        
+
         <div class="engine-options">
             <div class="engine-option" data-engine="google">
                 <input type="radio" name="engine" id="google" checked>
@@ -523,12 +538,12 @@
         <div class="shortcuts-container" id="shortcuts-container">
             <!-- 快捷方式将通过JavaScript动态添加 -->
         </div>
-        
+
         <!-- 添加快捷方式按钮 -->
         <div class="add-shortcut-container">
             <button class="add-shortcut-btn" id="add-shortcut-btn">➕ 添加快捷方式</button>
         </div>
-        
+
         <!-- 添加快捷方式模态框 -->
         <div class="modal" id="shortcut-modal">
             <div class="modal-content">
@@ -559,6 +574,14 @@
     </div>
 
     <script>
+        window.ga =
+            window.ga ||
+            function () {
+                (ga.q = ga.q || []).push(arguments);
+            };
+        ga.l = +new Date();
+        ga("create", "UA-105392568-1", "auto");
+        ga("send", "pageview");
         // 搜索引擎配置
         const engines = {
             google: {
@@ -584,23 +607,23 @@
 
         // 检查域名是否包含juejin
         const isJuejinDomain = window.location.href.includes('code.devrank');
-        
+
         // 工具箱切换
         document.getElementById('toolbox-toggle').addEventListener('click', function () {
             this.focus();
         });
-        
-        document.addEventListener('click', function(event) {
+
+        document.addEventListener('click', function (event) {
             const drawer = document.getElementById('toolbox-drawer');
             const toggle = document.getElementById('toolbox-toggle');
-            
-            if (drawer.style.display === 'block' && 
-                !drawer.contains(event.target) && 
+
+            if (drawer.style.display === 'block' &&
+                !drawer.contains(event.target) &&
                 !toggle.contains(event.target)) {
                 drawer.style.display = 'none';
             }
         });
-        
+
         document.getElementById('toolbox-toggle').addEventListener('click', function () {
             const drawer = document.getElementById('toolbox-drawer');
             drawer.style.display = drawer.style.display === 'block' ? 'none' : 'block';
@@ -608,7 +631,7 @@
 
         // 快捷方式功能
         let shortcuts = [];
-        
+
         // 初始化
         function init() {
             // 从localStorage读取上次选择的搜索引擎
@@ -674,7 +697,7 @@
             }
 
             showShortcutHint();
-            
+
             // 初始化快捷方式功能
             initShortcuts();
         }
@@ -683,20 +706,20 @@
         function initShortcuts() {
             // 从localStorage加载快捷方式
             loadShortcuts();
-            
+
             // 显示快捷方式
             renderShortcuts();
-            
+
             // 添加快捷方式按钮事件
             document.getElementById('add-shortcut-btn').addEventListener('click', () => {
                 document.getElementById('shortcut-modal').style.display = 'block';
             });
-            
+
             // 关闭模态框
             document.getElementById('close-modal').addEventListener('click', () => {
                 document.getElementById('shortcut-modal').style.display = 'none';
             });
-            
+
             // 点击模态框外部关闭
             window.addEventListener('click', (event) => {
                 const modal = document.getElementById('shortcut-modal');
@@ -704,7 +727,7 @@
                     modal.style.display = 'none';
                 }
             });
-            
+
             // 处理表单提交
             document.getElementById('shortcut-form').addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -743,20 +766,20 @@
                 document.getElementById('shortcut-url').value = shortcut.url;
                 document.getElementById('shortcut-description').value = shortcut.description;
                 document.getElementById('shortcut-icon').value = shortcut.icon || '';
-                
+
                 // 清空文件输入
                 document.getElementById('shortcut-icon-upload').value = '';
-                
+
                 // 显示模态框
                 document.getElementById('shortcut-modal').style.display = 'block';
-                
+
                 // 更改表单提交处理程序
                 const form = document.getElementById('shortcut-form');
-                
+
                 // 移除旧的事件监听器
                 const newForm = form.cloneNode(true);
                 form.parentNode.replaceChild(newForm, form);
-                
+
                 // 添加新的事件监听器
                 newForm.addEventListener('submit', (e) => {
                     e.preventDefault();
@@ -771,10 +794,10 @@
             const url = document.getElementById('shortcut-url').value;
             const description = document.getElementById('shortcut-description').value;
             const iconUrl = document.getElementById('shortcut-icon').value;
-            
+
             // 处理图标上传
             const fileInput = document.getElementById('shortcut-icon-upload');
-            
+
             // 找到要更新的快捷方式
             const shortcutIndex = shortcuts.findIndex(s => s.id === id);
             if (shortcutIndex !== -1) {
@@ -786,11 +809,11 @@
                     description,
                     icon: iconUrl || null
                 };
-                
+
                 // 如果有上传的文件，读取为base64
                 if (fileInput.files && fileInput.files[0]) {
                     const reader = new FileReader();
-                    reader.onload = function(e) {
+                    reader.onload = function (e) {
                         updatedShortcut.icon = e.target.result;
                         finishUpdateShortcut(shortcutIndex, updatedShortcut);
                     };
@@ -811,11 +834,11 @@
             shortcuts[index] = updatedShortcut;
             saveShortcuts();
             renderShortcuts();
-            
+
             // 重置表单并关闭模态框
             document.getElementById('shortcut-form').reset();
             document.getElementById('shortcut-modal').style.display = 'none';
-            
+
             // 恢复添加快捷方式的表单处理程序
             const form = document.getElementById('shortcut-form');
             const newForm = form.cloneNode(true);
@@ -832,10 +855,10 @@
             const url = document.getElementById('shortcut-url').value;
             const description = document.getElementById('shortcut-description').value;
             const iconUrl = document.getElementById('shortcut-icon').value;
-            
+
             // 处理图标上传
             const fileInput = document.getElementById('shortcut-icon-upload');
-            
+
             // 创建快捷方式对象
             const shortcut = {
                 id: Date.now(),
@@ -844,11 +867,11 @@
                 description,
                 icon: iconUrl || null
             };
-            
+
             // 如果有上传的文件，读取为base64
             if (fileInput.files && fileInput.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     shortcut.icon = e.target.result;
                     finishAddShortcut(shortcut);
                 };
@@ -868,7 +891,7 @@
             shortcuts.push(shortcut);
             saveShortcuts();
             renderShortcuts();
-            
+
             // 重置表单并关闭模态框
             document.getElementById('shortcut-form').reset();
             document.getElementById('shortcut-modal').style.display = 'none';
@@ -878,25 +901,25 @@
         function renderShortcuts() {
             const container = document.getElementById('shortcuts-container');
             container.innerHTML = '';
-            
+
             shortcuts.forEach(shortcut => {
                 const item = document.createElement('div');
                 item.className = 'shortcut-item';
-                
+
                 // 创建快捷方式内容
                 const iconHtml = shortcut.icon ? `<img src="${shortcut.icon}" alt="${shortcut.name}" class="shortcut-icon">` : '';
                 const nameHtml = `<div class="shortcut-name">${shortcut.name}</div>`;
                 const descHtml = `<div class="shortcut-description">${shortcut.description}</div>`;
                 const editBtnHtml = `<button class="edit-shortcut-btn" data-id="${shortcut.id}">✎</button>`;
                 const deleteBtnHtml = `<button class="delete-shortcut-btn" data-id="${shortcut.id}">✕</button>`;
-                
+
                 item.innerHTML = iconHtml + nameHtml + descHtml + editBtnHtml + deleteBtnHtml;
-                
+
                 // 添加点击事件
                 item.addEventListener('click', (e) => {
                     // 阻止事件冒泡
                     e.stopPropagation();
-                    
+
                     // 如果点击的是删除按钮，则执行删除功能
                     if (e.target.classList.contains('delete-shortcut-btn')) {
                         e.preventDefault();
@@ -904,7 +927,7 @@
                         deleteShortcut(id);
                         return;
                     }
-                    
+
                     // 如果点击的是编辑按钮，则执行编辑功能
                     if (e.target.classList.contains('edit-shortcut-btn')) {
                         e.preventDefault();
@@ -912,11 +935,11 @@
                         editShortcut(id);
                         return;
                     }
-                    
+
                     // 否则打开链接
                     window.open(shortcut.url, '_blank');
                 });
-                
+
                 container.appendChild(item);
             });
         }
@@ -992,6 +1015,7 @@
         // 启动应用
         init();
     </script>
+    <script src="assets/script.js"></script>
 </body>
 
 </html>
