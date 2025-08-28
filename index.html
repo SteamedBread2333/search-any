@@ -686,7 +686,34 @@
                 document.querySelectorAll('.theme-btn').forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.theme === theme);
                 });
+
+                // 更新canvas背景颜色
+                updateCanvasBackgroundColor(theme);
             }
+
+            // 根据主题更新canvas背景颜色
+        function updateCanvasBackgroundColor(theme) {
+            let color;
+            if (theme === 'dark') {
+                color = { r: 0, g: 0, b: 0 }; // 黑色
+            } else if (theme === 'light') {
+                color = { r: 255, g: 255, b: 255 }; // 白色
+            } else {
+                // auto模式，根据系统主题
+                const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                color = isDarkMode ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
+            }
+            
+            // 直接更新config.BACK_COLOR
+            if (typeof config !== 'undefined' && config.BACK_COLOR) {
+                config.BACK_COLOR = color;
+                
+                // 触发重新渲染
+                if (typeof updateBackgroundColorByTheme === 'function') {
+                    updateBackgroundColorByTheme();
+                }
+            }
+        }
 
             // 显示快捷键提示
             function showShortcutHint() {
