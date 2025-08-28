@@ -1154,3 +1154,28 @@ function hashCode (s) {
     }
     return hash;
 };
+
+// 根据当前主题设置背景颜色
+function updateBackgroundColorByTheme() {
+    var savedTheme = localStorage.getItem('theme') || 'auto';
+    var isDarkMode = false;
+    
+    if (savedTheme === 'dark') {
+        isDarkMode = true;
+    } else if (savedTheme === 'light') {
+        isDarkMode = false;
+    } else {
+        // auto模式，检测系统主题
+        isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    
+    // 设置背景颜色（使用0-255范围）
+    if (isDarkMode) {
+        config.BACK_COLOR = { r: 0, g: 0, b: 0 }; // 黑色
+    } else {
+        config.BACK_COLOR = { r: 255, g: 255, b: 255 }; // 白色
+    }
+}
+
+// 初始化背景颜色
+updateBackgroundColorByTheme();
