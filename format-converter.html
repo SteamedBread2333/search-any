@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>格式转换工厂 - FFmpeg.wasm</title>
+    <title>格式转换工厂 - 音视频图片转换</title>
     <style>
         :root {
             --primary-color: #4285f4;
@@ -396,7 +396,7 @@
         <div class="header">
             <a href="index.html" class="back-btn">← 返回首页</a>
             <h1>🔄 格式转换工厂</h1>
-            <p>基于 FFmpeg.wasm 的强大媒体格式转换工具</p>
+            <p>基于 FFmpeg.wasm 的音视频和图片格式转换工具</p>
         </div>
 
         <div class="main-content">
@@ -593,11 +593,7 @@
             },
             image: {
                 name: '图片格式',
-                formats: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'svg', 'psd', 'raw']
-            },
-            document: {
-                name: '文档格式',
-                formats: ['pdf', 'txt', 'rtf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']
+                formats: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'svg']
             }
         };
 
@@ -772,10 +768,18 @@
             // 显示文件信息
             displayFileInfo(file);
             
-            // 检测文件格式
+            // 检测文件格式并显示
             const detectedFormat = detectFileFormat(file.name);
+            const sourceFormatSelect = document.getElementById('sourceFormat');
+            
             if (detectedFormat) {
-                document.getElementById('sourceFormat').value = detectedFormat;
+                // 获取格式类型
+                const category = getFormatCategory(detectedFormat);
+                // 清空并重新填充源格式选择框
+                sourceFormatSelect.innerHTML = `<option value="${detectedFormat}">${detectedFormat.toUpperCase()} (${category})</option>`;
+                sourceFormatSelect.value = detectedFormat;
+            } else {
+                sourceFormatSelect.innerHTML = '<option value="">未知格式</option>';
             }
             
             // 显示转换选项
@@ -784,8 +788,11 @@
             // 更新按钮状态
             updateConvertButton();
             
-            // 确保 FFmpeg 已加载
-            if (!isFFmpegLoaded) {
+            // 检查是否需要加载 FFmpeg
+            const targetFormat = document.getElementById('targetFormat').value;
+            const needsFFmpeg = targetFormat && !canUseBrowserConversion(detectedFormat, targetFormat);
+            
+            if (needsFFmpeg && !isFFmpegLoaded) {
                 await loadFFmpeg();
             }
         }
@@ -824,6 +831,16 @@
         function detectFileFormat(filename) {
             const extension = filename.toLowerCase().split('.').pop();
             return extension;
+        }
+
+        // 获取格式类型（用于显示）
+        function getFormatCategory(format) {
+            for (const [key, category] of Object.entries(supportedFormats)) {
+                if (category.formats.includes(format)) {
+                    return category.name;
+                }
+            }
+            return '其他格式';
         }
 
         // 加载 FFmpeg
@@ -1049,7 +1066,7 @@
         }
 
         // 更新转换选项
-        function updateConversionOptions() {
+        async function updateConversionOptions() {
             const targetFormat = document.getElementById('targetFormat').value;
             const isVideo = supportedFormats.video.formats.includes(targetFormat);
             const isAudio = supportedFormats.audio.formats.includes(targetFormat);
@@ -1060,19 +1077,32 @@
             
             // 更新转换按钮状态
             updateConvertButton();
+            
+            // 检查是否需要加载 FFmpeg
+            if (currentFile && targetFormat) {
+                const sourceFormat = detectFileFormat(currentFile.name);
+                const needsFFmpeg = !canUseBrowserConversion(sourceFormat, targetFormat);
+                
+                if (needsFFmpeg && !isFFmpegLoaded) {
+                    await loadFFmpeg();
+                }
+            }
         }
 
         // 更新转换按钮状态
         function updateConvertButton() {
             const convertBtn = document.getElementById('convertBtn');
             const hasFile = !!currentFile;
-            const hasTargetFormat = !!document.getElementById('targetFormat').value;
+            const targetFormat = document.getElementById('targetFormat').value;
+            const hasTargetFormat = !!targetFormat;
             
-            // 检查是否是 SVG 文件
-            const isSVG = currentFile && detectFileFormat(currentFile.name) === 'svg';
+            // 检查是否可以使用浏览器原生转换（不需要 FFmpeg）
+            const sourceFormat = currentFile ? detectFileFormat(currentFile.name) : '';
+            const useBrowserConversion = hasFile && hasTargetFormat && 
+                                         canUseBrowserConversion(sourceFormat, targetFormat);
             
-            // SVG 文件不需要 FFmpeg，可以直接转换
-            const canConvert = hasFile && hasTargetFormat && (isSVG || isFFmpegLoaded);
+            // 可以使用浏览器转换或 FFmpeg 已加载
+            const canConvert = hasFile && hasTargetFormat && (useBrowserConversion || isFFmpegLoaded);
             
             convertBtn.disabled = !canConvert;
             
@@ -1080,13 +1110,52 @@
                 convertBtn.textContent = '请先选择文件';
             } else if (!hasTargetFormat) {
                 convertBtn.textContent = '请选择目标格式';
-            } else if (!isSVG && !isFFmpegLoaded) {
+            } else if (!useBrowserConversion && !isFFmpegLoaded) {
                 convertBtn.textContent = 'FFmpeg 加载中...';
             } else {
                 convertBtn.textContent = '开始转换';
             }
             
-            console.log('按钮状态更新:', { hasFile, isFFmpegLoaded, hasTargetFormat, isSVG, canConvert });
+            console.log('按钮状态更新:', { 
+                hasFile, 
+                isFFmpegLoaded, 
+                hasTargetFormat, 
+                sourceFormat,
+                useBrowserConversion, 
+                canConvert 
+            });
+        }
+
+        // 判断是否可以使用浏览器原生转换（不需要 FFmpeg）
+        function canUseBrowserConversion(sourceFormat, targetFormat) {
+            // 浏览器支持的图片格式
+            const browserSupportedInputs = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'];
+            const browserSupportedOutputs = ['png', 'jpg', 'jpeg', 'webp'];
+            
+            return browserSupportedInputs.includes(sourceFormat) && 
+                   browserSupportedOutputs.includes(targetFormat);
+        }
+
+        // 判断 FFmpeg 是否支持该格式转换
+        function isFFmpegSupported(sourceFormat, targetFormat) {
+            // FFmpeg 支持的格式
+            const ffmpegVideoFormats = supportedFormats.video.formats;
+            const ffmpegAudioFormats = supportedFormats.audio.formats;
+            const ffmpegImageFormats = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico'];
+            
+            const ffmpegSupported = [
+                ...ffmpegVideoFormats,
+                ...ffmpegAudioFormats,
+                ...ffmpegImageFormats
+            ];
+            
+            return ffmpegSupported.includes(sourceFormat) && ffmpegSupported.includes(targetFormat);
+        }
+
+        // 获取不支持转换的原因
+        function getUnsupportedReason(sourceFormat, targetFormat) {
+            return `不支持从 ${sourceFormat.toUpperCase()} 转换到 ${targetFormat.toUpperCase()}。\n` +
+                   `当前工具仅支持视频、音频和图片格式的转换。`;
         }
 
         // 开始转换
@@ -1110,12 +1179,20 @@
             
             const sourceFormat = detectFileFormat(currentFile.name);
             
-            // 检查是否是 SVG 转换
-            if (sourceFormat === 'svg') {
-                await convertSVG(targetFormat);
+            // 检查是否可以使用浏览器原生转换
+            if (canUseBrowserConversion(sourceFormat, targetFormat)) {
+                await convertImageWithBrowser(sourceFormat, targetFormat);
                 return;
             }
             
+            // 检查 FFmpeg 是否支持该格式转换
+            if (!isFFmpegSupported(sourceFormat, targetFormat)) {
+                const reason = getUnsupportedReason(sourceFormat, targetFormat);
+                showError(reason);
+                return;
+            }
+            
+            // 其他格式需要 FFmpeg
             if (!isFFmpegLoaded) {
                 showError('FFmpeg 尚未加载完成，请稍候...');
                 // 如果还没加载，尝试加载
@@ -1171,60 +1248,84 @@
             }
         }
 
-        // SVG 转换专用函数（使用浏览器渲染）
-        async function convertSVG(targetFormat) {
+        // 使用浏览器原生 API 转换图片（通用方法）
+        async function convertImageWithBrowser(sourceFormat, targetFormat) {
             try {
                 // 禁用转换按钮
                 document.getElementById('convertBtn').disabled = true;
                 
                 // 显示进度
-                showProgress('正在准备 SVG 转换...', 0);
+                showProgress('正在准备图片转换...', 0);
                 
-                // 读取 SVG 文件内容
-                const svgText = await currentFile.text();
-                
-                showProgress('正在渲染 SVG...', 20);
-                
-                // 创建一个临时的 Image 对象
+                // 创建图片对象
                 const img = new Image();
-                const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
-                const svgUrl = URL.createObjectURL(svgBlob);
+                
+                const imageUrl = URL.createObjectURL(currentFile);
+                
+                showProgress('正在加载图片...', 20);
                 
                 // 等待图片加载
                 await new Promise((resolve, reject) => {
                     img.onload = resolve;
-                    img.onerror = () => reject(new Error('SVG 加载失败，请确保 SVG 文件格式正确'));
-                    img.src = svgUrl;
+                    img.onerror = (e) => {
+                        console.error('图片加载错误:', e);
+                        reject(new Error('图片加载失败，请确保文件格式正确'));
+                    };
+                    // 对于本地文件（ObjectURL），不需要 crossOrigin
+                    img.crossOrigin = '';
+                    img.src = imageUrl;
                 });
                 
-                showProgress('正在转换为 ' + targetFormat.toUpperCase() + '...', 50);
+                showProgress(`正在转换为 ${targetFormat.toUpperCase()}...`, 50);
                 
-                // 创建 Canvas 并绘制 SVG
+                // 创建 Canvas 并绘制图片
                 const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
                 
-                // 设置 canvas 尺寸（使用 SVG 的实际尺寸或默认尺寸）
-                canvas.width = img.width || 800;
-                canvas.height = img.height || 600;
+                // 设置 canvas 尺寸
+                canvas.width = img.naturalWidth || img.width;
+                canvas.height = img.naturalHeight || img.height;
                 
-                // 绘制 SVG 到 canvas
-                ctx.drawImage(img, 0, 0);
+                // 检查尺寸是否有效
+                if (canvas.width === 0 || canvas.height === 0) {
+                    throw new Error('无法获取图片尺寸，请确保文件是有效的图片格式');
+                }
+                
+                // 如果目标格式是 JPG，先填充白色背景（因为 JPG 不支持透明）
+                if (targetFormat === 'jpg' || targetFormat === 'jpeg') {
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+                
+                // 绘制图片到 canvas
+                try {
+                    ctx.drawImage(img, 0, 0);
+                } catch (drawError) {
+                    console.error('Canvas 绘制错误:', drawError);
+                    throw new Error('图片绘制失败，可能是图片已损坏或格式不支持');
+                }
                 
                 // 清理临时 URL
-                URL.revokeObjectURL(svgUrl);
+                URL.revokeObjectURL(imageUrl);
                 
                 showProgress('正在生成文件...', 80);
                 
                 // 根据目标格式转换
                 let blob;
+                const quality = getImageQuality();
+                
                 if (targetFormat === 'png') {
                     blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
                 } else if (targetFormat === 'jpg' || targetFormat === 'jpeg') {
-                    blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+                    blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
                 } else if (targetFormat === 'webp') {
-                    blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', 0.95));
+                    blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
                 } else {
-                    throw new Error(`不支持从 SVG 转换到 ${targetFormat}。SVG 只能转换为 PNG、JPG 或 WEBP 格式。`);
+                    throw new Error(`浏览器不支持转换到 ${targetFormat} 格式`);
+                }
+                
+                if (!blob) {
+                    throw new Error('图片转换失败，浏览器可能不支持该格式');
                 }
                 
                 // 创建下载链接
@@ -1237,14 +1338,26 @@
                 // 显示结果
                 hideProgress();
                 document.getElementById('resultSection').style.display = 'block';
-                showSuccess('SVG 转换完成！');
+                showSuccess('图片转换完成！');
                 
             } catch (error) {
-                console.error('SVG 转换失败:', error);
-                showError('SVG 转换失败: ' + error.message);
+                console.error('图片转换失败:', error);
+                showError('图片转换失败: ' + error.message);
                 hideProgress();
             } finally {
                 document.getElementById('convertBtn').disabled = false;
+            }
+        }
+
+        // 根据质量设置获取图片质量参数
+        function getImageQuality() {
+            const quality = document.getElementById('quality').value;
+            switch (quality) {
+                case 'high': return 0.95;
+                case 'medium': return 0.85;
+                case 'low': return 0.70;
+                case 'custom': return 0.85; // 默认值
+                default: return 0.85;
             }
         }
 
@@ -1353,11 +1466,14 @@
 
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
+            // 支持多行文本，将 \n 转换为 <br>
+            errorDiv.innerHTML = message.replace(/\n/g, '<br>');
             errorDiv.style.display = 'block';
+            // 如果消息较长，延长显示时间
+            const displayTime = message.length > 100 ? 10000 : 5000;
             setTimeout(() => {
                 errorDiv.style.display = 'none';
-            }, 5000);
+            }, displayTime);
         }
 
         function hideError() {
