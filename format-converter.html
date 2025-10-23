@@ -1067,21 +1067,26 @@
             const convertBtn = document.getElementById('convertBtn');
             const hasFile = !!currentFile;
             const hasTargetFormat = !!document.getElementById('targetFormat').value;
-            const canConvert = hasFile && isFFmpegLoaded && hasTargetFormat;
+            
+            // 检查是否是 SVG 文件
+            const isSVG = currentFile && detectFileFormat(currentFile.name) === 'svg';
+            
+            // SVG 文件不需要 FFmpeg，可以直接转换
+            const canConvert = hasFile && hasTargetFormat && (isSVG || isFFmpegLoaded);
             
             convertBtn.disabled = !canConvert;
             
             if (!hasFile) {
                 convertBtn.textContent = '请先选择文件';
-            } else if (!isFFmpegLoaded) {
-                convertBtn.textContent = 'FFmpeg 加载中...';
             } else if (!hasTargetFormat) {
                 convertBtn.textContent = '请选择目标格式';
+            } else if (!isSVG && !isFFmpegLoaded) {
+                convertBtn.textContent = 'FFmpeg 加载中...';
             } else {
                 convertBtn.textContent = '开始转换';
             }
             
-            console.log('按钮状态更新:', { hasFile, isFFmpegLoaded, hasTargetFormat, canConvert });
+            console.log('按钮状态更新:', { hasFile, isFFmpegLoaded, hasTargetFormat, isSVG, canConvert });
         }
 
         // 开始转换
@@ -1097,18 +1102,26 @@
                 return;
             }
             
+            const targetFormat = document.getElementById('targetFormat').value;
+            if (!targetFormat) {
+                showError('请选择目标格式');
+                return;
+            }
+            
+            const sourceFormat = detectFileFormat(currentFile.name);
+            
+            // 检查是否是 SVG 转换
+            if (sourceFormat === 'svg') {
+                await convertSVG(targetFormat);
+                return;
+            }
+            
             if (!isFFmpegLoaded) {
                 showError('FFmpeg 尚未加载完成，请稍候...');
                 // 如果还没加载，尝试加载
                 if (!ffmpeg) {
                     await loadFFmpeg();
                 }
-                return;
-            }
-            
-            const targetFormat = document.getElementById('targetFormat').value;
-            if (!targetFormat) {
-                showError('请选择目标格式');
                 return;
             }
             
@@ -1120,7 +1133,7 @@
                 showProgress('正在准备转换...', 0);
                 
                 // 写入输入文件
-                const inputFileName = `input.${detectFileFormat(currentFile.name)}`;
+                const inputFileName = `input.${sourceFormat}`;
                 const outputFileName = `output.${targetFormat}`;
                 
                 await ffmpeg.writeFile(inputFileName, await fetchFile(currentFile));
@@ -1152,6 +1165,83 @@
             } catch (error) {
                 console.error('转换失败:', error);
                 showError('转换失败: ' + error.message);
+                hideProgress();
+            } finally {
+                document.getElementById('convertBtn').disabled = false;
+            }
+        }
+
+        // SVG 转换专用函数（使用浏览器渲染）
+        async function convertSVG(targetFormat) {
+            try {
+                // 禁用转换按钮
+                document.getElementById('convertBtn').disabled = true;
+                
+                // 显示进度
+                showProgress('正在准备 SVG 转换...', 0);
+                
+                // 读取 SVG 文件内容
+                const svgText = await currentFile.text();
+                
+                showProgress('正在渲染 SVG...', 20);
+                
+                // 创建一个临时的 Image 对象
+                const img = new Image();
+                const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+                const svgUrl = URL.createObjectURL(svgBlob);
+                
+                // 等待图片加载
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = () => reject(new Error('SVG 加载失败，请确保 SVG 文件格式正确'));
+                    img.src = svgUrl;
+                });
+                
+                showProgress('正在转换为 ' + targetFormat.toUpperCase() + '...', 50);
+                
+                // 创建 Canvas 并绘制 SVG
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // 设置 canvas 尺寸（使用 SVG 的实际尺寸或默认尺寸）
+                canvas.width = img.width || 800;
+                canvas.height = img.height || 600;
+                
+                // 绘制 SVG 到 canvas
+                ctx.drawImage(img, 0, 0);
+                
+                // 清理临时 URL
+                URL.revokeObjectURL(svgUrl);
+                
+                showProgress('正在生成文件...', 80);
+                
+                // 根据目标格式转换
+                let blob;
+                if (targetFormat === 'png') {
+                    blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                } else if (targetFormat === 'jpg' || targetFormat === 'jpeg') {
+                    blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+                } else if (targetFormat === 'webp') {
+                    blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', 0.95));
+                } else {
+                    throw new Error(`不支持从 SVG 转换到 ${targetFormat}。SVG 只能转换为 PNG、JPG 或 WEBP 格式。`);
+                }
+                
+                // 创建下载链接
+                const url = URL.createObjectURL(blob);
+                
+                const downloadBtn = document.getElementById('downloadBtn');
+                downloadBtn.href = url;
+                downloadBtn.download = `converted.${targetFormat}`;
+                
+                // 显示结果
+                hideProgress();
+                document.getElementById('resultSection').style.display = 'block';
+                showSuccess('SVG 转换完成！');
+                
+            } catch (error) {
+                console.error('SVG 转换失败:', error);
+                showError('SVG 转换失败: ' + error.message);
                 hideProgress();
             } finally {
                 document.getElementById('convertBtn').disabled = false;
