@@ -729,9 +729,23 @@
                 const endSeparator = ZERO_WIDTH_CHARS.RIGHT_TO_LEFT + ZERO_WIDTH_CHARS.JOINER;
                 const watermarkWithSeparator = startSeparator + zeroWidthWatermark + endSeparator;
                 
-                // 将水印插入到文本末尾（简单可靠的方式）
-                // 也可以选择在文本开头插入，或者分散插入
-                const watermarkedText = originalText + watermarkWithSeparator;
+                // 将水印插入到文本中间位置（不在开头和结尾）
+                let watermarkedText = '';
+                const textLength = originalText.length;
+                
+                if (textLength <= 1) {
+                    // 文本太短，无法避免在两端
+                    watermarkedText = originalText + watermarkWithSeparator;
+                } else {
+                    // 计算中间位置（确保不在开头和结尾）
+                    // 插入位置在文本的中间，既不在开头也不在结尾
+                    const insertPos = Math.floor(textLength / 2);
+                    
+                    // 将水印插入到中间位置
+                    watermarkedText = originalText.substring(0, insertPos) + 
+                                     watermarkWithSeparator + 
+                                     originalText.substring(insertPos);
+                }
 
                 // 显示结果
                 document.getElementById('encodedText').textContent = watermarkedText;
