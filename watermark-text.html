@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>盲水印文本工具 - 零宽字符水印</title>
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --error-color: #ea4335;
+            --warning-color: #fbbc04;
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--bg-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            color: var(--primary-color);
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #3367d6;
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+        }
+
+        .btn-secondary:hover {
+            background: #2d8f3f;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .result-section h3 {
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        .result-text {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            word-break: break-all;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .copy-btn {
+            margin-top: 10px;
+            background: var(--secondary-color);
+        }
+
+        .copy-btn:hover {
+            background: #2d8f3f;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .info-box h4 {
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: var(--text-color);
+        }
+
+        .info-box li {
+            margin-bottom: 5px;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid var(--warning-color);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .warning-box h4 {
+            margin-bottom: 10px;
+            color: #856404;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">← 返回首页</a>
+            <h1>🔒 盲水印文本工具</h1>
+            <p>使用零宽字符实现文本盲水印，支持中英文</p>
+        </div>
+
+        <div class="main-content">
+            <div class="info-box">
+                <h4>📖 什么是零宽字符盲水印？</h4>
+                <ul>
+                    <li>零宽字符是不可见的Unicode字符，不会影响文本的显示和阅读</li>
+                    <li>可以将水印信息隐藏在文本中，肉眼无法察觉</li>
+                    <li>适用于文档溯源、防泄露等场景</li>
+                    <li>支持中英文文本和水印</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <h4>⚠️ 注意事项</h4>
+                <ul>
+                    <li>某些文本编辑器可能会自动清理零宽字符</li>
+                    <li>复制粘贴时可能会丢失水印信息</li>
+                    <li>建议在需要时重新生成水印文本</li>
+                </ul>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('encode', this)">🔐 添加水印</button>
+                <button class="tab" onclick="switchTab('decode', this)">🔓 提取水印</button>
+            </div>
+
+            <!-- 添加水印 -->
+            <div id="encodeTab" class="tab-content active">
+                <div class="form-group">
+                    <label for="originalText">原始文本：</label>
+                    <textarea id="originalText" placeholder="请输入要添加水印的文本..."></textarea>
+                    <div class="char-count">
+                        <span id="originalTextCount">0</span> 字符
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="watermarkText">水印内容：</label>
+                    <input type="text" id="watermarkText" placeholder="请输入水印内容（如：用户名、ID等）...">
+                    <div class="char-count">
+                        <span id="watermarkTextCount">0</span> 字符
+                    </div>
+                </div>
+
+                <button class="btn" onclick="encodeWatermark()">生成带水印的文本</button>
+
+                <div id="encodeResult" class="result-section" style="display: none;">
+                    <h3>✅ 生成结果：</h3>
+                    <div class="result-text" id="encodedText"></div>
+                    <button class="btn copy-btn" onclick="copyToClipboard('encodedText')">📋 复制结果</button>
+                </div>
+            </div>
+
+            <!-- 提取水印 -->
+            <div id="decodeTab" class="tab-content">
+                <div class="form-group">
+                    <label for="watermarkedText">带水印的文本：</label>
+                    <textarea id="watermarkedText" placeholder="请粘贴带水印的文本..."></textarea>
+                    <div class="char-count">
+                        <span id="watermarkedTextCount">0</span> 字符
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" onclick="decodeWatermark()">提取水印和原始文本</button>
+
+                <div id="decodeResult" class="result-section" style="display: none;">
+                    <h3>✅ 提取结果：</h3>
+                    <div class="form-group">
+                        <label>提取的水印：</label>
+                        <div class="result-text" id="extractedWatermark"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>原始文本（已去除水印）：</label>
+                        <div class="result-text" id="extractedText"></div>
+                    </div>
+                    <button class="btn copy-btn" onclick="copyToClipboard('extractedText')">📋 复制原始文本</button>
+                    <button class="btn copy-btn" onclick="copyToClipboard('extractedWatermark')">📋 复制水印</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 零宽字符定义
+        const ZERO_WIDTH_CHARS = {
+            SPACE: '\u200B',           // 零宽空格
+            NON_JOINER: '\u200C',      // 零宽非连字符
+            JOINER: '\u200D',          // 零宽连字符
+            LEFT_TO_RIGHT: '\u200E',   // 左到右标记
+            RIGHT_TO_LEFT: '\u200F'    // 右到左标记
+        };
+
+        // 字符映射表（用于编码）
+        const CHAR_MAP = [
+            ZERO_WIDTH_CHARS.SPACE,
+            ZERO_WIDTH_CHARS.NON_JOINER,
+            ZERO_WIDTH_CHARS.JOINER,
+            ZERO_WIDTH_CHARS.LEFT_TO_RIGHT,
+            ZERO_WIDTH_CHARS.RIGHT_TO_LEFT
+        ];
+
+        // 切换标签页
+        function switchTab(tabName, element) {
+            // 验证tabName
+            if (tabName !== 'encode' && tabName !== 'decode') {
+                console.warn('Invalid tab name:', tabName);
+                return;
+            }
+            
+            // 隐藏所有标签页内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签的active状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的标签页
+            const tabContent = document.getElementById(tabName + 'Tab');
+            if (tabContent) {
+                tabContent.classList.add('active');
+            }
+            
+            // 激活选中的标签
+            if (element) {
+                element.classList.add('active');
+            } else {
+                // 如果没有传入element，通过tabName找到对应的按钮
+                document.querySelectorAll('.tab').forEach(tab => {
+                    const isEncodeTab = tab.textContent.includes('添加水印');
+                    const isDecodeTab = tab.textContent.includes('提取水印');
+                    if ((tabName === 'encode' && isEncodeTab) || (tabName === 'decode' && isDecodeTab)) {
+                        tab.classList.add('active');
+                    }
+                });
+            }
+            
+            // 更新URL参数（不触发页面刷新）
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tabName);
+            window.history.pushState({ tab: tabName }, '', url);
+        }
+
+        // 从URL参数初始化tab
+        function initTabFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            
+            if (tabParam === 'encode' || tabParam === 'decode') {
+                // 直接调用switchTab，它会自动找到对应的按钮
+                switchTab(tabParam);
+            }
+        }
+
+        // 将文本转换为二进制字符串
+        function textToBinary(text) {
+            let binary = '';
+            for (let i = 0; i < text.length; i++) {
+                const charCode = text.charCodeAt(i);
+                // 将字符编码转换为16位二进制字符串
+                binary += charCode.toString(2).padStart(16, '0');
+            }
+            return binary;
+        }
+
+        // 将二进制字符串转换为文本
+        function binaryToText(binary) {
+            let text = '';
+            // 每16位代表一个字符
+            for (let i = 0; i < binary.length; i += 16) {
+                const binaryChar = binary.substr(i, 16);
+                if (binaryChar.length === 16) {
+                    const charCode = parseInt(binaryChar, 2);
+                    text += String.fromCharCode(charCode);
+                }
+            }
+            return text;
+        }
+
+        // 将二进制字符串编码为零宽字符
+        function encodeBinaryToZeroWidth(binary) {
+            let encoded = '';
+            for (let i = 0; i < binary.length; i++) {
+                const bit = binary[i];
+                // 0 用 SPACE，1 用 NON_JOINER
+                if (bit === '0') {
+                    encoded += ZERO_WIDTH_CHARS.SPACE;
+                } else {
+                    encoded += ZERO_WIDTH_CHARS.NON_JOINER;
+                }
+            }
+            return encoded;
+        }
+
+        // 将零宽字符解码为二进制字符串
+        function decodeZeroWidthToBinary(zeroWidthText) {
+            let binary = '';
+            for (let i = 0; i < zeroWidthText.length; i++) {
+                const char = zeroWidthText[i];
+                if (char === ZERO_WIDTH_CHARS.SPACE) {
+                    binary += '0';
+                } else if (char === ZERO_WIDTH_CHARS.NON_JOINER) {
+                    binary += '1';
+                }
+            }
+            return binary;
+        }
+
+        // 提取文本中的零宽字符
+        function extractZeroWidthChars(text) {
+            let zeroWidthText = '';
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                if (char === ZERO_WIDTH_CHARS.SPACE || 
+                    char === ZERO_WIDTH_CHARS.NON_JOINER ||
+                    char === ZERO_WIDTH_CHARS.JOINER ||
+                    char === ZERO_WIDTH_CHARS.LEFT_TO_RIGHT ||
+                    char === ZERO_WIDTH_CHARS.RIGHT_TO_LEFT) {
+                    zeroWidthText += char;
+                }
+            }
+            return zeroWidthText;
+        }
+
+        // 移除文本中的零宽字符
+        function removeZeroWidthChars(text) {
+            let cleanText = '';
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                if (char !== ZERO_WIDTH_CHARS.SPACE && 
+                    char !== ZERO_WIDTH_CHARS.NON_JOINER &&
+                    char !== ZERO_WIDTH_CHARS.JOINER &&
+                    char !== ZERO_WIDTH_CHARS.LEFT_TO_RIGHT &&
+                    char !== ZERO_WIDTH_CHARS.RIGHT_TO_LEFT) {
+                    cleanText += char;
+                }
+            }
+            return cleanText;
+        }
+
+        // 添加水印
+        function encodeWatermark() {
+            const originalText = document.getElementById('originalText').value.trim();
+            const watermarkText = document.getElementById('watermarkText').value.trim();
+
+            if (!originalText) {
+                alert('请输入原始文本！');
+                return;
+            }
+
+            if (!watermarkText) {
+                alert('请输入水印内容！');
+                return;
+            }
+
+            try {
+                // 将水印文本转换为二进制
+                const watermarkBinary = textToBinary(watermarkText);
+                
+                // 将二进制编码为零宽字符
+                const zeroWidthWatermark = encodeBinaryToZeroWidth(watermarkBinary);
+                
+                // 使用分隔符标记水印的开始和结束
+                // 使用两个不同的分隔符组合，提高识别准确性
+                const startSeparator = ZERO_WIDTH_CHARS.JOINER + ZERO_WIDTH_CHARS.LEFT_TO_RIGHT;
+                const endSeparator = ZERO_WIDTH_CHARS.RIGHT_TO_LEFT + ZERO_WIDTH_CHARS.JOINER;
+                const watermarkWithSeparator = startSeparator + zeroWidthWatermark + endSeparator;
+                
+                // 将水印插入到文本末尾（简单可靠的方式）
+                // 也可以选择在文本开头插入，或者分散插入
+                const watermarkedText = originalText + watermarkWithSeparator;
+
+                // 显示结果
+                document.getElementById('encodedText').textContent = watermarkedText;
+                document.getElementById('encodeResult').style.display = 'block';
+                
+                // 滚动到结果区域
+                document.getElementById('encodeResult').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                alert('生成水印失败：' + error.message);
+                console.error(error);
+            }
+        }
+
+        // 提取水印
+        function decodeWatermark() {
+            const watermarkedText = document.getElementById('watermarkedText').value.trim();
+
+            if (!watermarkedText) {
+                alert('请输入带水印的文本！');
+                return;
+            }
+
+            try {
+                // 提取零宽字符
+                const zeroWidthText = extractZeroWidthChars(watermarkedText);
+                
+                if (!zeroWidthText) {
+                    alert('未检测到水印信息！');
+                    return;
+                }
+
+                // 查找开始和结束分隔符
+                const startSeparator = ZERO_WIDTH_CHARS.JOINER + ZERO_WIDTH_CHARS.LEFT_TO_RIGHT;
+                const endSeparator = ZERO_WIDTH_CHARS.RIGHT_TO_LEFT + ZERO_WIDTH_CHARS.JOINER;
+                
+                const startIndex = zeroWidthText.indexOf(startSeparator);
+                
+                if (startIndex === -1) {
+                    alert('未找到有效的水印开始标记！');
+                    return;
+                }
+
+                // 提取水印部分（跳过分隔符）
+                const watermarkStart = startIndex + startSeparator.length;
+                const endIndex = zeroWidthText.indexOf(endSeparator, watermarkStart);
+                
+                if (endIndex === -1) {
+                    alert('未找到有效的水印结束标记！');
+                    return;
+                }
+
+                const watermarkZeroWidth = zeroWidthText.substring(watermarkStart, endIndex);
+                
+                if (!watermarkZeroWidth) {
+                    alert('水印内容为空！');
+                    return;
+                }
+                
+                // 将零宽字符解码为二进制
+                const watermarkBinary = decodeZeroWidthToBinary(watermarkZeroWidth);
+                
+                // 将二进制转换为文本
+                const extractedWatermark = binaryToText(watermarkBinary);
+                
+                // 移除原始文本中的零宽字符
+                const extractedText = removeZeroWidthChars(watermarkedText);
+
+                // 显示结果
+                document.getElementById('extractedWatermark').textContent = extractedWatermark || '(空)';
+                document.getElementById('extractedText').textContent = extractedText;
+                document.getElementById('decodeResult').style.display = 'block';
+                
+                // 滚动到结果区域
+                document.getElementById('decodeResult').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                alert('提取水印失败：' + error.message);
+                console.error(error);
+            }
+        }
+
+        // 复制到剪贴板
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            // 使用现代 Clipboard API
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('已复制到剪贴板！');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    fallbackCopyToClipboard(text);
+                });
+            } else {
+                fallbackCopyToClipboard(text);
+            }
+        }
+
+        // 备用复制方法
+        function fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                alert('已复制到剪贴板！');
+            } catch (err) {
+                alert('复制失败，请手动复制');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // 字符计数
+        document.getElementById('originalText').addEventListener('input', function() {
+            document.getElementById('originalTextCount').textContent = this.value.length;
+        });
+
+        document.getElementById('watermarkText').addEventListener('input', function() {
+            document.getElementById('watermarkTextCount').textContent = this.value.length;
+        });
+
+        document.getElementById('watermarkedText').addEventListener('input', function() {
+            document.getElementById('watermarkedTextCount').textContent = this.value.length;
+        });
+
+        // 页面加载时初始化tab
+        document.addEventListener('DOMContentLoaded', function() {
+            initTabFromURL();
+        });
+
+        // 处理浏览器前进后退按钮
+        window.addEventListener('popstate', function(event) {
+            if (event.state && event.state.tab) {
+                switchTab(event.state.tab);
+            } else {
+                // 如果没有state，从URL读取
+                initTabFromURL();
+            }
+        });
+    </script>
+</body>
+</html>
+
