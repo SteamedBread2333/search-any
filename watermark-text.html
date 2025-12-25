@@ -262,6 +262,47 @@
             margin-top: 5px;
         }
 
+        /* 语言复选框样式 */
+        .language-checkbox-item {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .language-checkbox-item:hover {
+            border-color: var(--primary-color);
+            background: #f0f7ff;
+        }
+
+        .language-checkbox-item input[type="checkbox"] {
+            margin-right: 6px;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .language-checkbox-item input[type="checkbox"]:checked + label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .language-checkbox-item.checked {
+            border-color: var(--primary-color);
+            background: #e3f2fd;
+        }
+
+        .language-checkbox-item label {
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 2rem;
@@ -319,6 +360,14 @@
             <div id="encodeTab" class="tab-content active">
                 <div class="form-group">
                     <label for="originalText">原始文本：</label>
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; padding: 10px; background: #f8f9fa; border-radius: 8px;" id="languageCheckboxes">
+                            <!-- 语言复选框将通过JavaScript动态生成 -->
+                        </div>
+                        <button class="btn" onclick="generateRandomText()" style="width: auto; padding: 8px 16px; margin: 0; font-size: 0.9rem;">
+                            🎲 生成5字随机文案
+                        </button>
+                    </div>
                     <textarea id="originalText" placeholder="请输入要添加水印的文本..."></textarea>
                     <div class="char-count">
                         <span id="originalTextCount">0</span> 字符
@@ -389,6 +438,127 @@
             ZERO_WIDTH_CHARS.LEFT_TO_RIGHT,
             ZERO_WIDTH_CHARS.RIGHT_TO_LEFT
         ];
+
+        // 多语言随机文本模板
+        const LANGUAGE_TEMPLATES = {
+            'zh': {
+                name: '中文',
+                templates: [
+                    '在数字时代，信息传播的速度前所未有。人们通过互联网连接世界，分享知识和经验。',
+                    '科技的发展改变了我们的生活方式。智能手机、人工智能、云计算等技术正在重塑社会。',
+                    '教育是推动社会进步的重要力量。通过学习和实践，人们不断提升自己的能力和素质。',
+                    '环境保护已成为全球关注的焦点。可持续发展理念正在引导我们走向更美好的未来。',
+                    '文化交流促进了不同民族之间的理解与尊重。多元化的世界需要包容和开放的心态。',
+                    '创新是推动经济发展的关键因素。企业需要不断探索新的商业模式和技术路径。',
+                    '健康的生活方式包括合理饮食、适量运动和充足睡眠。这些习惯有助于提高生活质量。',
+                    '艺术创作反映了人类对美的追求。音乐、绘画、文学等形式丰富了我们的精神世界。'
+                ]
+            },
+            'en': {
+                name: 'English',
+                templates: [
+                    'In the digital age, information spreads at an unprecedented speed. People connect with the world through the internet, sharing knowledge and experiences.',
+                    'Technological development has changed our way of life. Smartphones, artificial intelligence, cloud computing and other technologies are reshaping society.',
+                    'Education is an important force driving social progress. Through learning and practice, people continuously improve their abilities and qualities.',
+                    'Environmental protection has become a global focus. The concept of sustainable development is guiding us towards a better future.',
+                    'Cultural exchange promotes understanding and respect between different nations. A diverse world requires tolerance and an open mind.',
+                    'Innovation is a key factor driving economic development. Enterprises need to continuously explore new business models and technological paths.',
+                    'A healthy lifestyle includes a reasonable diet, moderate exercise and adequate sleep. These habits help improve quality of life.',
+                    'Artistic creation reflects human pursuit of beauty. Music, painting, literature and other forms enrich our spiritual world.'
+                ]
+            },
+            'ja': {
+                name: '日本語',
+                templates: [
+                    'デジタル時代において、情報の伝播速度は前例のないものとなっています。人々はインターネットを通じて世界とつながり、知識と経験を共有しています。',
+                    '技術の発展は私たちの生活様式を変えました。スマートフォン、人工知能、クラウドコンピューティングなどの技術が社会を再構築しています。',
+                    '教育は社会進歩を推進する重要な力です。学習と実践を通じて、人々は継続的に能力と資質を向上させています。',
+                    '環境保護は世界的な焦点となっています。持続可能な開発の概念が、より良い未来へと私たちを導いています。',
+                    '文化交流は異なる民族間の理解と尊重を促進します。多様な世界には寛容と開放的な心が必要です。',
+                    '革新は経済発展を推進する重要な要因です。企業は継続的に新しいビジネスモデルと技術的経路を探求する必要があります。',
+                    '健康的な生活様式には、合理的な食事、適度な運動、十分な睡眠が含まれます。これらの習慣は生活の質を向上させるのに役立ちます。',
+                    '芸術創作は人間の美への追求を反映しています。音楽、絵画、文学などの形式が私たちの精神世界を豊かにしています。'
+                ]
+            },
+            'ko': {
+                name: '한국어',
+                templates: [
+                    '디지털 시대에 정보 전파 속도는 전례 없는 수준입니다. 사람들은 인터넷을 통해 세계와 연결되어 지식과 경험을 공유합니다.',
+                    '기술 발전은 우리의 생활 방식을 변화시켰습니다. 스마트폰, 인공지능, 클라우드 컴퓨팅 등의 기술이 사회를 재구성하고 있습니다.',
+                    '교육은 사회 진보를 추진하는 중요한 힘입니다. 학습과 실천을 통해 사람들은 지속적으로 능력과 자질을 향상시킵니다.',
+                    '환경 보호는 전 세계적 관심사가 되었습니다. 지속 가능한 발전 개념이 더 나은 미래로 우리를 이끌고 있습니다.',
+                    '문화 교류는 서로 다른 민족 간의 이해와 존중을 촉진합니다. 다양성의 세계는 관용과 개방적인 마음이 필요합니다.',
+                    '혁신은 경제 발전을 추진하는 핵심 요소입니다. 기업은 지속적으로 새로운 비즈니스 모델과 기술 경로를 탐색해야 합니다.',
+                    '건강한 생활 방식에는 합리적인 식단, 적절한 운동, 충분한 수면이 포함됩니다. 이러한 습관은 삶의 질을 향상시키는 데 도움이 됩니다.',
+                    '예술 창작은 인간의 아름다움에 대한 추구를 반영합니다. 음악, 회화, 문학 등의 형식이 우리의 정신 세계를 풍요롭게 합니다.'
+                ]
+            },
+            'fr': {
+                name: 'Français',
+                templates: [
+                    'À l\'ère numérique, l\'information se propage à une vitesse sans précédent. Les gens se connectent au monde via Internet, partageant connaissances et expériences.',
+                    'Le développement technologique a changé notre mode de vie. Les smartphones, l\'intelligence artificielle, le cloud computing et d\'autres technologies remodèlent la société.',
+                    'L\'éducation est une force importante qui pousse le progrès social. Grâce à l\'apprentissage et à la pratique, les gens améliorent continuellement leurs capacités et leurs qualités.',
+                    'La protection de l\'environnement est devenue un enjeu mondial. Le concept de développement durable nous guide vers un avenir meilleur.',
+                    'Les échanges culturels favorisent la compréhension et le respect entre les différentes nations. Un monde diversifié nécessite la tolérance et un esprit ouvert.',
+                    'L\'innovation est un facteur clé qui stimule le développement économique. Les entreprises doivent continuellement explorer de nouveaux modèles commerciaux et voies technologiques.',
+                    'Un mode de vie sain comprend une alimentation raisonnable, un exercice modéré et un sommeil suffisant. Ces habitudes aident à améliorer la qualité de vie.',
+                    'La création artistique reflète la quête humaine de la beauté. La musique, la peinture, la littérature et d\'autres formes enrichissent notre monde spirituel.'
+                ]
+            },
+            'de': {
+                name: 'Deutsch',
+                templates: [
+                    'Im digitalen Zeitalter verbreitet sich Information mit beispielloser Geschwindigkeit. Menschen verbinden sich über das Internet mit der Welt und teilen Wissen und Erfahrungen.',
+                    'Die technologische Entwicklung hat unsere Lebensweise verändert. Smartphones, künstliche Intelligenz, Cloud-Computing und andere Technologien gestalten die Gesellschaft neu.',
+                    'Bildung ist eine wichtige Kraft, die den sozialen Fortschritt vorantreibt. Durch Lernen und Üben verbessern die Menschen kontinuierlich ihre Fähigkeiten und Qualitäten.',
+                    'Umweltschutz ist zu einem globalen Fokus geworden. Das Konzept der nachhaltigen Entwicklung führt uns in eine bessere Zukunft.',
+                    'Kulturaustausch fördert Verständnis und Respekt zwischen verschiedenen Nationen. Eine vielfältige Welt erfordert Toleranz und eine offene Einstellung.',
+                    'Innovation ist ein Schlüsselfaktor für die wirtschaftliche Entwicklung. Unternehmen müssen kontinuierlich neue Geschäftsmodelle und technologische Wege erkunden.',
+                    'Ein gesunder Lebensstil umfasst eine vernünftige Ernährung, mäßige Bewegung und ausreichend Schlaf. Diese Gewohnheiten helfen, die Lebensqualität zu verbessern.',
+                    'Künstlerisches Schaffen spiegelt das menschliche Streben nach Schönheit wider. Musik, Malerei, Literatur und andere Formen bereichern unsere geistige Welt.'
+                ]
+            },
+            'es': {
+                name: 'Español',
+                templates: [
+                    'En la era digital, la información se propaga a una velocidad sin precedentes. Las personas se conectan con el mundo a través de Internet, compartiendo conocimientos y experiencias.',
+                    'El desarrollo tecnológico ha cambiado nuestra forma de vida. Los teléfonos inteligentes, la inteligencia artificial, la computación en la nube y otras tecnologías están remodelando la sociedad.',
+                    'La educación es una fuerza importante que impulsa el progreso social. A través del aprendizaje y la práctica, las personas mejoran continuamente sus habilidades y cualidades.',
+                    'La protección del medio ambiente se ha convertido en un enfoque global. El concepto de desarrollo sostenible nos guía hacia un futuro mejor.',
+                    'El intercambio cultural promueve la comprensión y el respeto entre diferentes naciones. Un mundo diverso requiere tolerancia y una mente abierta.',
+                    'La innovación es un factor clave que impulsa el desarrollo económico. Las empresas necesitan explorar continuamente nuevos modelos comerciales y caminos tecnológicos.',
+                    'Un estilo de vida saludable incluye una dieta razonable, ejercicio moderado y sueño adecuado. Estos hábitos ayudan a mejorar la calidad de vida.',
+                    'La creación artística refleja la búsqueda humana de la belleza. La música, la pintura, la literatura y otras formas enriquecen nuestro mundo espiritual.'
+                ]
+            },
+            'ru': {
+                name: 'Русский',
+                templates: [
+                    'В цифровую эпоху информация распространяется с беспрецедентной скоростью. Люди связываются с миром через Интернет, делясь знаниями и опытом.',
+                    'Технологическое развитие изменило наш образ жизни. Смартфоны, искусственный интеллект, облачные вычисления и другие технологии перестраивают общество.',
+                    'Образование - важная сила, движущая социальный прогресс. Благодаря обучению и практике люди постоянно повышают свои способности и качества.',
+                    'Защита окружающей среды стала глобальным фокусом. Концепция устойчивого развития ведет нас к лучшему будущему.',
+                    'Культурный обмен способствует пониманию и уважению между разными нациями. Разнообразный мир требует толерантности и открытого мышления.',
+                    'Инновации - ключевой фактор, движущий экономическое развитие. Предприятиям необходимо постоянно исследовать новые бизнес-модели и технологические пути.',
+                    'Здоровый образ жизни включает разумное питание, умеренные упражнения и достаточный сон. Эти привычки помогают улучшить качество жизни.',
+                    'Художественное творчество отражает человеческое стремление к красоте. Музыка, живопись, литература и другие формы обогащают наш духовный мир.'
+                ]
+            },
+            'ar': {
+                name: 'العربية',
+                templates: [
+                    'في العصر الرقمي، تنتشر المعلومات بسرعة غير مسبوقة. يتصل الناس بالعالم من خلال الإنترنت، وهم يشاركون المعرفة والخبرات.',
+                    'التطور التكنولوجي غير طريقة حياتنا. الهواتف الذكية والذكاء الاصطناعي والحوسبة السحابية وغيرها من التقنيات تعيد تشكيل المجتمع.',
+                    'التعليم قوة مهمة تدفع التقدم الاجتماعي. من خلال التعلم والممارسة، يحسن الناس باستمرار قدراتهم وصفاتهم.',
+                    'أصبحت حماية البيئة محط اهتمام عالمي. مفهوم التنمية المستدامة يوجهنا نحو مستقبل أفضل.',
+                    'التبادل الثقافي يعزز التفاهم والاحترام بين الأمم المختلفة. العالم المتنوع يحتاج إلى التسامح وعقلية منفتحة.',
+                    'الابتكار عامل رئيسي يدفع التنمية الاقتصادية. تحتاج الشركات إلى استكشاف نماذج أعمال ومسارات تكنولوجية جديدة باستمرار.',
+                    'أسلوب الحياة الصحي يشمل نظامًا غذائيًا معقولًا وتمارين معتدلة ونومًا كافيًا. هذه العادات تساعد في تحسين جودة الحياة.',
+                    'الإبداع الفني يعكس السعي البشري للجمال. الموسيقى والرسم والأدب وأشكال أخرى تثري عالمنا الروحي.'
+                ]
+            }
+        };
 
         // 切换标签页
         function switchTab(tabName, element) {
@@ -677,6 +847,105 @@
             document.body.removeChild(textArea);
         }
 
+        // 初始化语言选择复选框
+        function initLanguageSelection() {
+            const languageCheckboxes = document.getElementById('languageCheckboxes');
+            languageCheckboxes.innerHTML = '';
+            
+            // 默认选中中文和英文
+            const defaultSelected = ['zh', 'en'];
+            
+            Object.keys(LANGUAGE_TEMPLATES).forEach(langCode => {
+                const lang = LANGUAGE_TEMPLATES[langCode];
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.className = 'language-checkbox-item';
+                if (defaultSelected.includes(langCode)) {
+                    checkboxDiv.classList.add('checked');
+                }
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `lang-${langCode}`;
+                checkbox.value = langCode;
+                checkbox.checked = defaultSelected.includes(langCode);
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        checkboxDiv.classList.add('checked');
+                    } else {
+                        checkboxDiv.classList.remove('checked');
+                    }
+                });
+                
+                const label = document.createElement('label');
+                label.htmlFor = `lang-${langCode}`;
+                label.textContent = lang.name;
+                
+                checkboxDiv.appendChild(checkbox);
+                checkboxDiv.appendChild(label);
+                languageCheckboxes.appendChild(checkboxDiv);
+            });
+        }
+
+        // 生成5字随机文案
+        function generateRandomText() {
+            // 获取选中的语言
+            const selectedLanguages = [];
+            document.querySelectorAll('#languageCheckboxes input[type="checkbox"]:checked').forEach(checkbox => {
+                selectedLanguages.push(checkbox.value);
+            });
+            
+            if (selectedLanguages.length === 0) {
+                alert('请至少选择一种语言！');
+                return;
+            }
+            
+            // 收集所有字符
+            const allChars = [];
+            
+            selectedLanguages.forEach(langCode => {
+                const lang = LANGUAGE_TEMPLATES[langCode];
+                // 从所有模板中提取字符
+                lang.templates.forEach(template => {
+                    // 过滤掉标点符号和空格，只保留有意义的字符
+                    const chars = template.split('').filter(char => {
+                        // 保留字母、数字、中日韩字符等
+                        return /[\u4e00-\u9fa5\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7A3a-zA-Z0-9\u0600-\u06FF\u0400-\u04FF]/.test(char);
+                    });
+                    allChars.push(...chars);
+                });
+            });
+            
+            if (allChars.length === 0) {
+                alert('无法生成文案，请检查语言选择！');
+                return;
+            }
+            
+            // 随机选择5个字符（不重复）
+            const selectedChars = [];
+            const usedIndices = new Set();
+            
+            while (selectedChars.length < 5 && usedIndices.size < allChars.length) {
+                const randomIndex = Math.floor(Math.random() * allChars.length);
+                if (!usedIndices.has(randomIndex)) {
+                    selectedChars.push(allChars[randomIndex]);
+                    usedIndices.add(randomIndex);
+                }
+            }
+            
+            // 如果选中的字符不足5个，随机重复一些字符
+            while (selectedChars.length < 5 && allChars.length > 0) {
+                const randomIndex = Math.floor(Math.random() * allChars.length);
+                selectedChars.push(allChars[randomIndex]);
+            }
+            
+            // 组合成5字文案
+            const generatedText = selectedChars.join('');
+            
+            // 填充到原始文本输入框
+            document.getElementById('originalText').value = generatedText;
+            document.getElementById('originalTextCount').textContent = generatedText.length;
+        }
+
         // 字符计数
         document.getElementById('originalText').addEventListener('input', function() {
             document.getElementById('originalTextCount').textContent = this.value.length;
@@ -690,9 +959,10 @@
             document.getElementById('watermarkedTextCount').textContent = this.value.length;
         });
 
-        // 页面加载时初始化tab
+        // 页面加载时初始化tab和语言选择
         document.addEventListener('DOMContentLoaded', function() {
             initTabFromURL();
+            initLanguageSelection();
         });
 
         // 处理浏览器前进后退按钮
